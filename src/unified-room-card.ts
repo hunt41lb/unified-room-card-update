@@ -211,7 +211,7 @@ export class UnifiedRoomCard extends LitElement {
     // Climate entities
     if (this._config.climate_entities) {
       const climate = this._config.climate_entities;
-      if (climate.primary_entity) entitiesToCheck.push(climate.primary_entity);
+      if (climate.primary_entities) entitiesToCheck.push(...climate.primary_entities);
       if (climate.temperature_entities) entitiesToCheck.push(...climate.temperature_entities);
       if (climate.humidity_entities) entitiesToCheck.push(...climate.humidity_entities);
       if (climate.air_quality_entities) entitiesToCheck.push(...climate.air_quality_entities);

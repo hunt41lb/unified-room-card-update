@@ -993,15 +993,15 @@ export class UnifiedRoomCardEditor extends LitElement {
           <ha-icon .icon=${expanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
         </div>
         <div class="accordion-content ${expanded ? 'expanded' : ''}">
-          <!-- Primary Entity -->
+          <!-- Primary Entities -->
           <div class="form-row">
-            <span class="form-label">Primary Entity</span>
+            <span class="form-label">Primary Entities</span>
             <div class="form-input">
               <ha-selector
                 .hass=${this.hass}
-                .selector=${{ entity: { domain: ['sensor', 'climate', 'weather'] } }}
-                .value=${climateConfig.primary_entity || ''}
-                @value-changed=${(e: CustomEvent) => this._climateValueChanged('primary_entity', e.detail.value)}
+                .selector=${{ entity: { domain: ['sensor', 'climate', 'weather'], multiple: true } }}
+                .value=${climateConfig.primary_entities || []}
+                @value-changed=${(e: CustomEvent) => this._climateValueChanged('primary_entities', e.detail.value)}
               ></ha-selector>
             </div>
           </div>

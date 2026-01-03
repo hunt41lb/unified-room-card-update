@@ -138,7 +138,7 @@ hold_action:
 
 ### Climate Entities
 
-Display temperature, humidity, air quality, and illuminance data. Multiple sensors are automatically averaged. Use `primary_entity` to override the main display with any sensor type.
+Display temperature, humidity, air quality, and illuminance data. Multiple sensors are automatically averaged. Use `primary_entities` to override the main display with any sensor type.
 
 ```yaml
 climate_entities:
@@ -150,16 +150,18 @@ climate_entities:
     - sensor.room_humidity
   decimal_places: 1
 
-  # Option 2: Override with any entity as primary display
-  primary_entity: sensor.room_humidity  # Shows humidity as main value
-  show_primary_unit: true               # Auto-detects unit (%)
+  # Option 2: Override with any entities as primary display
+  primary_entities:
+    - sensor.room_humidity        # Multiple entities will be averaged
+    - sensor.room_humidity_2
+  show_primary_unit: true         # Auto-detects unit (%)
 ```
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `primary_entity` | string | - | Override primary display with any sensor entity |
-| `show_primary_unit` | boolean | `true` | Show/hide unit for primary entity (auto-detected) |
-| `temperature_entities` | array | - | Temperature sensor entity IDs (used if no primary_entity) |
+| `primary_entities` | array | - | Override primary display with any sensor entities (averaged) |
+| `show_primary_unit` | boolean | `true` | Show/hide unit for primary (auto-detected) |
+| `temperature_entities` | array | - | Temperature sensor entity IDs (used if no primary_entities) |
 | `show_temperature_unit` | boolean | `true` | Show/hide temperature unit |
 | `humidity_entities` | array | - | Humidity sensor entity IDs |
 | `show_humidity_unit` | boolean | `true` | Show/hide humidity unit |
