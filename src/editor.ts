@@ -16,6 +16,7 @@ import {
   HA_COLOR_OPTIONS,
   DOMAIN_STATE_DEFAULTS,
   DOMAINS_WITH_DEFAULTS,
+  ANIMATION_OPTIONS,
 } from './constants';
 
 import type {
@@ -40,6 +41,12 @@ export class UnifiedRoomCardEditor extends LitElement {
   @state() private _config?: UnifiedRoomCardConfig;
   @state() private _accordionState: EditorAccordionState = {
     main: true,
+    // Sub-accordions for main section (Basic expanded by default)
+    mainBasic: true,
+    mainIcon: false,
+    mainAppearance: false,
+    mainActions: false,
+    // Other sections
     persistent: false,
     intermittent: false,
     climate: false,
@@ -98,7 +105,7 @@ export class UnifiedRoomCardEditor extends LitElement {
   // ===========================================================================
 
   /**
-   * Render main card configuration section
+   * Render main card configuration section with sub-accordions
    */
   private _renderMainSection(): TemplateResult {
     const expanded = this._accordionState.main;
@@ -113,14 +120,47 @@ export class UnifiedRoomCardEditor extends LitElement {
           <ha-icon .icon=${expanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
         </div>
         <div class="accordion-content ${expanded ? 'expanded' : ''}">
-          <!-- Card Name -->
-          <div class="form-row">
-            <span class="form-label">Card Name</span>
+          ${this._renderBasicSettingsSubSection()}
+          ${this._renderIconSubSection()}
+          ${this._renderAppearanceSubSection()}
+          ${this._renderActionsSubSection()}
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Render Basic Settings sub-accordion
+   */
+  private _renderBasicSettingsSubSection(): TemplateResult {
+    const expanded = this._accordionState.mainBasic;
+
+    return html`
+      <div class="sub-accordion">
+        <div
+          class="sub-accordion-header ${expanded ? 'expanded' : ''}"
+          @click=${() => this._toggleAccordion('mainBasic')}
+        >
+          <span>Basic Settings</span>
+          <ha-icon .icon=${expanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+        </div>
+        <div class="sub-accordion-content ${expanded ? 'expanded' : ''}">
+          <!-- Card Name with inline Show Name toggle -->
+          <div class="form-row-inline">
+            <span class="form-label">Name</span>
             <div class="form-input">
               <ha-textfield
                 .value=${this._config?.name || ''}
+                placeholder="Room Name"
                 @input=${(e: Event) => this._valueChanged('name', (e.target as HTMLInputElement).value)}
               ></ha-textfield>
+            </div>
+            <div class="form-toggle">
+              <span>Show</span>
+              <ha-switch
+                .checked=${this._config?.show_name !== false}
+                @change=${(e: Event) => this._valueChanged('show_name', (e.target as HTMLInputElement).checked)}
+              ></ha-switch>
             </div>
           </div>
           <!-- Entity -->
@@ -135,108 +175,101 @@ export class UnifiedRoomCardEditor extends LitElement {
               ></ha-selector>
             </div>
           </div>
-          <!-- Icon -->
+          <!-- Show State -->
           <div class="form-row">
-            <span class="form-label">Icon</span>
-            <div class="form-input">
-              <ha-selector
-                .hass=${this.hass}
-                .selector=${{ icon: {} }}
-                .value=${this._config?.icon || ''}
-                @value-changed=${(e: CustomEvent) => this._valueChanged('icon', e.detail.value)}
-              ></ha-selector>
-            </div>
-          </div>
-          <!-- Icon Position (Horizontal / Vertical) -->
-          <div class="form-row-dual expand-inputs">
-            <div class="form-item">
-              <span class="form-label">Horizontal</span>
-              <div class="form-input">
-                <ha-select
-                  .value=${this._config?.icon_horizontal_position || 'right'}
-                  @selected=${(e: Event) => this._valueChanged('icon_horizontal_position', (e.target as HTMLSelectElement).value)}
-                  @closed=${(e: Event) => e.stopPropagation()}
-                >
-                  ${ICON_HORIZONTAL_DROPDOWN_OPTIONS.map(
-                    (option) => html`
-                      <mwc-list-item .value=${option.value}>${option.label}</mwc-list-item>
-                    `
-                  )}
-                </ha-select>
-              </div>
-            </div>
-            <div class="form-item">
-              <span class="form-label">Vertical</span>
-              <div class="form-input">
-                <ha-select
-                  .value=${this._config?.icon_vertical_position || 'top'}
-                  @selected=${(e: Event) => this._valueChanged('icon_vertical_position', (e.target as HTMLSelectElement).value)}
-                  @closed=${(e: Event) => e.stopPropagation()}
-                >
-                  ${ICON_VERTICAL_DROPDOWN_OPTIONS.map(
-                    (option) => html`
-                      <mwc-list-item .value=${option.value}>${option.label}</mwc-list-item>
-                    `
-                  )}
-                </ha-select>
-              </div>
-            </div>
-          </div>
-          <!-- Show Name / Show Icon (dual row) -->
-          <div class="form-row-dual">
-            <div class="form-item">
-              <span class="form-label">Show Name</span>
-              <div class="form-input">
-                <ha-switch
-                  .checked=${this._config?.show_name !== false}
-                  @change=${(e: Event) => this._valueChanged('show_name', (e.target as HTMLInputElement).checked)}
-                ></ha-switch>
-              </div>
-            </div>
-            <div class="form-item">
-              <span class="form-label">Show Icon</span>
-              <div class="form-input">
-                <ha-switch
-                  .checked=${this._config?.show_icon !== false}
-                  @change=${(e: Event) => this._valueChanged('show_icon', (e.target as HTMLInputElement).checked)}
-                ></ha-switch>
-              </div>
-            </div>
-          </div>
-          <!-- Show State Text / Show Icon Background (dual row) -->
-          <div class="form-row-dual">
-            <div class="form-item">
-              <span class="form-label">Show State</span>
-              <div class="form-input">
-                <ha-switch
-                  .checked=${this._config?.show_state || false}
-                  @change=${(e: Event) => this._valueChanged('show_state', (e.target as HTMLInputElement).checked)}
-                ></ha-switch>
-              </div>
-            </div>
-            <div class="form-item">
-              <span class="form-label">Icon Background</span>
-              <div class="form-input">
-                <ha-switch
-                  .checked=${this._config?.show_img_cell !== false}
-                  @change=${(e: Event) => this._valueChanged('show_img_cell', (e.target as HTMLInputElement).checked)}
-                ></ha-switch>
-              </div>
-            </div>
-          </div>
-          <!-- Animate Icon (single row) -->
-          <div class="form-row">
-            <span class="form-label">Animate Icon</span>
+            <span class="form-label">Show State</span>
             <div class="form-input">
               <ha-switch
-                .checked=${this._config?.animate_icon || false}
-                @change=${(e: Event) => this._valueChanged('animate_icon', (e.target as HTMLInputElement).checked)}
+                .checked=${this._config?.show_state || false}
+                @change=${(e: Event) => this._valueChanged('show_state', (e.target as HTMLInputElement).checked)}
               ></ha-switch>
             </div>
           </div>
-          <!-- Icon Size / Background Size (dual row) -->
-          <div class="form-row-dual expand-inputs">
-            <div class="form-item">
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Render Icon sub-accordion
+   */
+  private _renderIconSubSection(): TemplateResult {
+    const expanded = this._accordionState.mainIcon;
+    const showIcon = this._config?.show_icon !== false;
+    const showBackground = this._config?.show_img_cell !== false;
+    const animateIcon = this._config?.animate_icon || false;
+
+    return html`
+      <div class="sub-accordion">
+        <div
+          class="sub-accordion-header ${expanded ? 'expanded' : ''}"
+          @click=${() => this._toggleAccordion('mainIcon')}
+        >
+          <span>Icon</span>
+          <ha-icon .icon=${expanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+        </div>
+        <div class="sub-accordion-content ${expanded ? 'expanded' : ''}">
+          <!-- Show Icon toggle -->
+          <div class="form-row">
+            <span class="form-label">Show Icon</span>
+            <div class="form-input">
+              <ha-switch
+                .checked=${showIcon}
+                @change=${(e: Event) => this._valueChanged('show_icon', (e.target as HTMLInputElement).checked)}
+              ></ha-switch>
+            </div>
+          </div>
+          
+          ${showIcon ? html`
+            <!-- Icon selector -->
+            <div class="form-row">
+              <span class="form-label">Icon</span>
+              <div class="form-input">
+                <ha-selector
+                  .hass=${this.hass}
+                  .selector=${{ icon: {} }}
+                  .value=${this._config?.icon || ''}
+                  @value-changed=${(e: CustomEvent) => this._valueChanged('icon', e.detail.value)}
+                ></ha-selector>
+              </div>
+            </div>
+            <!-- Position dropdowns -->
+            <div class="form-row-dual expand-inputs">
+              <div class="form-item">
+                <span class="form-label">Horizontal</span>
+                <div class="form-input">
+                  <ha-select
+                    .value=${this._config?.icon_horizontal_position || 'right'}
+                    @selected=${(e: Event) => this._valueChanged('icon_horizontal_position', (e.target as HTMLSelectElement).value)}
+                    @closed=${(e: Event) => e.stopPropagation()}
+                  >
+                    ${ICON_HORIZONTAL_DROPDOWN_OPTIONS.map(
+                      (option) => html`
+                        <mwc-list-item .value=${option.value}>${option.label}</mwc-list-item>
+                      `
+                    )}
+                  </ha-select>
+                </div>
+              </div>
+              <div class="form-item">
+                <span class="form-label">Vertical</span>
+                <div class="form-input">
+                  <ha-select
+                    .value=${this._config?.icon_vertical_position || 'top'}
+                    @selected=${(e: Event) => this._valueChanged('icon_vertical_position', (e.target as HTMLSelectElement).value)}
+                    @closed=${(e: Event) => e.stopPropagation()}
+                  >
+                    ${ICON_VERTICAL_DROPDOWN_OPTIONS.map(
+                      (option) => html`
+                        <mwc-list-item .value=${option.value}>${option.label}</mwc-list-item>
+                      `
+                    )}
+                  </ha-select>
+                </div>
+              </div>
+            </div>
+            <!-- Icon Size -->
+            <div class="form-row">
               <span class="form-label">Icon Size</span>
               <div class="form-input">
                 <ha-textfield
@@ -246,18 +279,70 @@ export class UnifiedRoomCardEditor extends LitElement {
                 ></ha-textfield>
               </div>
             </div>
-            <div class="form-item">
-              <span class="form-label">Background Size</span>
+            <!-- Show Background toggle -->
+            <div class="form-row">
+              <span class="form-label">Show Background</span>
               <div class="form-input">
-                <ha-textfield
-                  .value=${this._config?.img_cell_size || ''}
-                  placeholder="50px"
-                  @input=${(e: Event) => this._valueChanged('img_cell_size', (e.target as HTMLInputElement).value)}
-                ></ha-textfield>
+                <ha-switch
+                  .checked=${showBackground}
+                  @change=${(e: Event) => this._valueChanged('show_img_cell', (e.target as HTMLInputElement).checked)}
+                ></ha-switch>
               </div>
             </div>
-          </div>
-          <!-- Card Height / Card Width (dual row) -->
+            ${showBackground ? html`
+              <!-- Background Size -->
+              <div class="form-row">
+                <span class="form-label">Background Size</span>
+                <div class="form-input">
+                  <ha-textfield
+                    .value=${this._config?.img_cell_size || ''}
+                    placeholder="50px"
+                    @input=${(e: Event) => this._valueChanged('img_cell_size', (e.target as HTMLInputElement).value)}
+                  ></ha-textfield>
+                </div>
+              </div>
+            ` : ''}
+            <!-- Animation dropdown -->
+            <div class="form-row">
+              <span class="form-label">Animation</span>
+              <div class="form-input">
+                <ha-select
+                  .value=${this._config?.icon_animation || 'none'}
+                  @selected=${(e: Event) => this._valueChanged('icon_animation', (e.target as HTMLSelectElement).value)}
+                  @closed=${(e: Event) => e.stopPropagation()}
+                >
+                  ${ANIMATION_OPTIONS.map(
+                    (option) => html`
+                      <mwc-list-item .value=${option.value}>${option.label}</mwc-list-item>
+                    `
+                  )}
+                </ha-select>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Render Card Appearance sub-accordion
+   */
+  private _renderAppearanceSubSection(): TemplateResult {
+    const expanded = this._accordionState.mainAppearance;
+    const hasBorderEntity = !!this._config?.border_entity;
+
+    return html`
+      <div class="sub-accordion">
+        <div
+          class="sub-accordion-header ${expanded ? 'expanded' : ''}"
+          @click=${() => this._toggleAccordion('mainAppearance')}
+        >
+          <span>Card Appearance</span>
+          <ha-icon .icon=${expanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+        </div>
+        <div class="sub-accordion-content ${expanded ? 'expanded' : ''}">
+          <!-- Card Height / Width -->
           <div class="form-row-dual expand-inputs">
             <div class="form-item">
               <span class="form-label">Height</span>
@@ -280,7 +365,7 @@ export class UnifiedRoomCardEditor extends LitElement {
               </div>
             </div>
           </div>
-          <!-- Border Indicator Entity -->
+          <!-- Border Entity -->
           <div class="form-row">
             <span class="form-label">Border Entity</span>
             <div class="form-input">
@@ -292,43 +377,67 @@ export class UnifiedRoomCardEditor extends LitElement {
               ></ha-selector>
             </div>
           </div>
-          ${this._config?.border_entity ? html`
-          <div class="form-row-dual expand-inputs">
-            <div class="form-item">
-              <span class="form-label">Border Width</span>
-              <div class="form-input">
-                <ha-select
-                  .value=${this._config?.border_width || '2px'}
-                  @selected=${(e: CustomEvent) => this._valueChanged('border_width', (e.target as HTMLSelectElement).value)}
-                  @closed=${(e: Event) => e.stopPropagation()}
-                >
-                  <mwc-list-item value="1px">1px</mwc-list-item>
-                  <mwc-list-item value="2px">2px</mwc-list-item>
-                  <mwc-list-item value="3px">3px</mwc-list-item>
-                  <mwc-list-item value="4px">4px</mwc-list-item>
-                  <mwc-list-item value="5px">5px</mwc-list-item>
-                </ha-select>
+          <p class="helper-text">Border color changes based on this entity's state</p>
+          
+          ${hasBorderEntity ? html`
+            <!-- Border Width / Style -->
+            <div class="form-row-dual expand-inputs">
+              <div class="form-item">
+                <span class="form-label">Border Width</span>
+                <div class="form-input">
+                  <ha-select
+                    .value=${this._config?.border_width || '2px'}
+                    @selected=${(e: CustomEvent) => this._valueChanged('border_width', (e.target as HTMLSelectElement).value)}
+                    @closed=${(e: Event) => e.stopPropagation()}
+                  >
+                    <mwc-list-item value="1px">1px</mwc-list-item>
+                    <mwc-list-item value="2px">2px</mwc-list-item>
+                    <mwc-list-item value="3px">3px</mwc-list-item>
+                    <mwc-list-item value="4px">4px</mwc-list-item>
+                    <mwc-list-item value="5px">5px</mwc-list-item>
+                  </ha-select>
+                </div>
+              </div>
+              <div class="form-item">
+                <span class="form-label">Border Style</span>
+                <div class="form-input">
+                  <ha-select
+                    .value=${this._config?.border_style || 'solid'}
+                    @selected=${(e: CustomEvent) => this._valueChanged('border_style', (e.target as HTMLSelectElement).value)}
+                    @closed=${(e: Event) => e.stopPropagation()}
+                  >
+                    <mwc-list-item value="solid">Solid</mwc-list-item>
+                    <mwc-list-item value="dashed">Dashed</mwc-list-item>
+                    <mwc-list-item value="dotted">Dotted</mwc-list-item>
+                    <mwc-list-item value="double">Double</mwc-list-item>
+                    <mwc-list-item value="groove">Groove</mwc-list-item>
+                    <mwc-list-item value="ridge">Ridge</mwc-list-item>
+                  </ha-select>
+                </div>
               </div>
             </div>
-            <div class="form-item">
-              <span class="form-label">Border Style</span>
-              <div class="form-input">
-                <ha-select
-                  .value=${this._config?.border_style || 'solid'}
-                  @selected=${(e: CustomEvent) => this._valueChanged('border_style', (e.target as HTMLSelectElement).value)}
-                  @closed=${(e: Event) => e.stopPropagation()}
-                >
-                  <mwc-list-item value="solid">Solid</mwc-list-item>
-                  <mwc-list-item value="dashed">Dashed</mwc-list-item>
-                  <mwc-list-item value="dotted">Dotted</mwc-list-item>
-                  <mwc-list-item value="double">Double</mwc-list-item>
-                  <mwc-list-item value="groove">Groove</mwc-list-item>
-                  <mwc-list-item value="ridge">Ridge</mwc-list-item>
-                </ha-select>
-              </div>
-            </div>
-          </div>
           ` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Render Actions sub-accordion
+   */
+  private _renderActionsSubSection(): TemplateResult {
+    const expanded = this._accordionState.mainActions;
+
+    return html`
+      <div class="sub-accordion">
+        <div
+          class="sub-accordion-header ${expanded ? 'expanded' : ''}"
+          @click=${() => this._toggleAccordion('mainActions')}
+        >
+          <span>Actions</span>
+          <ha-icon .icon=${expanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+        </div>
+        <div class="sub-accordion-content ${expanded ? 'expanded' : ''}">
           <!-- Tap Action -->
           <div class="form-row">
             <span class="form-label">Tap Action</span>
@@ -349,29 +458,30 @@ export class UnifiedRoomCardEditor extends LitElement {
             </div>
           </div>
           ${this._config?.tap_action?.action === 'navigate' ? html`
-          <div class="form-row">
-            <span class="form-label">Navigation Path</span>
-            <div class="form-input">
-              <ha-textfield
-                .value=${this._config?.tap_action?.navigation_path || ''}
-                placeholder="/lovelace/0"
-                @input=${(e: Event) => this._tapActionDataChanged('tap_action', 'navigation_path', (e.target as HTMLInputElement).value)}
-              ></ha-textfield>
+            <div class="form-row">
+              <span class="form-label">Navigation Path</span>
+              <div class="form-input">
+                <ha-textfield
+                  .value=${this._config?.tap_action?.navigation_path || ''}
+                  placeholder="/lovelace/0"
+                  @input=${(e: Event) => this._tapActionDataChanged('tap_action', 'navigation_path', (e.target as HTMLInputElement).value)}
+                ></ha-textfield>
+              </div>
             </div>
-          </div>
           ` : ''}
           ${this._config?.tap_action?.action === 'url' ? html`
-          <div class="form-row">
-            <span class="form-label">URL Path</span>
-            <div class="form-input">
-              <ha-textfield
-                .value=${this._config?.tap_action?.url_path || ''}
-                placeholder="https://example.com"
-                @input=${(e: Event) => this._tapActionDataChanged('tap_action', 'url_path', (e.target as HTMLInputElement).value)}
-              ></ha-textfield>
+            <div class="form-row">
+              <span class="form-label">URL Path</span>
+              <div class="form-input">
+                <ha-textfield
+                  .value=${this._config?.tap_action?.url_path || ''}
+                  placeholder="https://example.com"
+                  @input=${(e: Event) => this._tapActionDataChanged('tap_action', 'url_path', (e.target as HTMLInputElement).value)}
+                ></ha-textfield>
+              </div>
             </div>
-          </div>
           ` : ''}
+          
           <!-- Hold Action -->
           <div class="form-row">
             <span class="form-label">Hold Action</span>
@@ -392,29 +502,30 @@ export class UnifiedRoomCardEditor extends LitElement {
             </div>
           </div>
           ${this._config?.hold_action?.action === 'navigate' ? html`
-          <div class="form-row">
-            <span class="form-label">Navigation Path</span>
-            <div class="form-input">
-              <ha-textfield
-                .value=${this._config?.hold_action?.navigation_path || ''}
-                placeholder="/lovelace/0"
-                @input=${(e: Event) => this._tapActionDataChanged('hold_action', 'navigation_path', (e.target as HTMLInputElement).value)}
-              ></ha-textfield>
+            <div class="form-row">
+              <span class="form-label">Navigation Path</span>
+              <div class="form-input">
+                <ha-textfield
+                  .value=${this._config?.hold_action?.navigation_path || ''}
+                  placeholder="/lovelace/0"
+                  @input=${(e: Event) => this._tapActionDataChanged('hold_action', 'navigation_path', (e.target as HTMLInputElement).value)}
+                ></ha-textfield>
+              </div>
             </div>
-          </div>
           ` : ''}
           ${this._config?.hold_action?.action === 'url' ? html`
-          <div class="form-row">
-            <span class="form-label">URL Path</span>
-            <div class="form-input">
-              <ha-textfield
-                .value=${this._config?.hold_action?.url_path || ''}
-                placeholder="https://example.com"
-                @input=${(e: Event) => this._tapActionDataChanged('hold_action', 'url_path', (e.target as HTMLInputElement).value)}
-              ></ha-textfield>
+            <div class="form-row">
+              <span class="form-label">URL Path</span>
+              <div class="form-input">
+                <ha-textfield
+                  .value=${this._config?.hold_action?.url_path || ''}
+                  placeholder="https://example.com"
+                  @input=${(e: Event) => this._tapActionDataChanged('hold_action', 'url_path', (e.target as HTMLInputElement).value)}
+                ></ha-textfield>
+              </div>
             </div>
-          </div>
           ` : ''}
+          
           <!-- Double Tap Action -->
           <div class="form-row">
             <span class="form-label">Double Tap Action</span>
@@ -435,28 +546,28 @@ export class UnifiedRoomCardEditor extends LitElement {
             </div>
           </div>
           ${this._config?.double_tap_action?.action === 'navigate' ? html`
-          <div class="form-row">
-            <span class="form-label">Navigation Path</span>
-            <div class="form-input">
-              <ha-textfield
-                .value=${this._config?.double_tap_action?.navigation_path || ''}
-                placeholder="/lovelace/0"
-                @input=${(e: Event) => this._tapActionDataChanged('double_tap_action', 'navigation_path', (e.target as HTMLInputElement).value)}
-              ></ha-textfield>
+            <div class="form-row">
+              <span class="form-label">Navigation Path</span>
+              <div class="form-input">
+                <ha-textfield
+                  .value=${this._config?.double_tap_action?.navigation_path || ''}
+                  placeholder="/lovelace/0"
+                  @input=${(e: Event) => this._tapActionDataChanged('double_tap_action', 'navigation_path', (e.target as HTMLInputElement).value)}
+                ></ha-textfield>
+              </div>
             </div>
-          </div>
           ` : ''}
           ${this._config?.double_tap_action?.action === 'url' ? html`
-          <div class="form-row">
-            <span class="form-label">URL Path</span>
-            <div class="form-input">
-              <ha-textfield
-                .value=${this._config?.double_tap_action?.url_path || ''}
-                placeholder="https://example.com"
-                @input=${(e: Event) => this._tapActionDataChanged('double_tap_action', 'url_path', (e.target as HTMLInputElement).value)}
-              ></ha-textfield>
+            <div class="form-row">
+              <span class="form-label">URL Path</span>
+              <div class="form-input">
+                <ha-textfield
+                  .value=${this._config?.double_tap_action?.url_path || ''}
+                  placeholder="https://example.com"
+                  @input=${(e: Event) => this._tapActionDataChanged('double_tap_action', 'url_path', (e.target as HTMLInputElement).value)}
+                ></ha-textfield>
+              </div>
             </div>
-          </div>
           ` : ''}
         </div>
       </div>

@@ -126,6 +126,10 @@ export const animationClasses = css`
   .animation-flash {
     animation: flash 1s ease-in-out infinite;
   }
+
+  .animation-spin {
+    animation: spin 2s linear infinite;
+  }
 `;
 
 // =============================================================================
@@ -528,6 +532,56 @@ export const editorStyles = css`
     display: block;
   }
 
+  /* Sub-accordion styles (nested within main accordions) */
+  .sub-accordion {
+    border: 1px solid ${unsafeCSS(HA_CSS_VARIABLES.dividerColor)};
+    border-radius: 6px;
+    margin-bottom: 12px;
+    margin-left: 8px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.01);
+  }
+
+  .sub-accordion:last-child {
+    margin-bottom: 0;
+  }
+
+  .sub-accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: rgba(0, 0, 0, 0.02);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    color: ${unsafeCSS(HA_CSS_VARIABLES.primaryTextColor)};
+    transition: background 0.2s ease;
+  }
+
+  .sub-accordion-header:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .sub-accordion-header ha-icon {
+    transition: transform 0.2s ease;
+    --mdc-icon-size: 18px;
+  }
+
+  .sub-accordion-header.expanded ha-icon {
+    transform: rotate(180deg);
+  }
+
+  .sub-accordion-content {
+    padding: 12px 14px;
+    display: none;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .sub-accordion-content.expanded {
+    display: block;
+  }
+
   .section-description {
     font-size: 12px;
     color: ${unsafeCSS(HA_CSS_VARIABLES.secondaryTextColor)};
@@ -592,6 +646,44 @@ export const editorStyles = css`
 
   .form-input {
     flex: 1;
+  }
+
+  /* Inline form row - text field with toggle on same row */
+  .form-row-inline {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 12px;
+  }
+
+  .form-row-inline:last-child {
+    margin-bottom: 0;
+  }
+
+  .form-row-inline .form-label {
+    flex: 0 0 auto;
+  }
+
+  .form-row-inline .form-input {
+    flex: 1;
+  }
+
+  .form-row-inline .form-toggle {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: ${unsafeCSS(HA_CSS_VARIABLES.secondaryTextColor)};
+  }
+
+  /* Helper text style */
+  .helper-text {
+    font-size: 11px;
+    color: ${unsafeCSS(HA_CSS_VARIABLES.secondaryTextColor)};
+    margin: -8px 0 12px 0;
+    padding-left: 140px;
+    font-style: italic;
   }
 
   .entity-list {

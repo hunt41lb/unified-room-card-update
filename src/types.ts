@@ -207,7 +207,7 @@ export interface UnifiedRoomCardConfig {
   show_icon?: boolean;
   show_state?: boolean;
   show_img_cell?: boolean;
-  animate_icon?: boolean;
+  icon_animation?: string;  // Animation type: none, pulse, glow, flash, spin
   
   // Main Icon
   icon?: string;
@@ -257,6 +257,12 @@ export interface UnifiedRoomCardConfig {
 
 export interface EditorAccordionState {
   main: boolean;
+  // Sub-accordions for main section
+  mainBasic: boolean;
+  mainIcon: boolean;
+  mainAppearance: boolean;
+  mainActions: boolean;
+  // Other sections
   persistent: boolean;
   intermittent: boolean;
   climate: boolean;

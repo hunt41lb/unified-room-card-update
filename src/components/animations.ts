@@ -157,16 +157,16 @@ export type AnimationName = 'spin' | 'pulse' | 'glow' | 'flash' | 'none';
 /**
  * Get CSS class for animation name
  */
-export function getAnimationClass(animation: AnimationName | undefined): string {
+export function getAnimationClass(animation: AnimationName | string | undefined): string {
   switch (animation) {
     case 'spin':
-      return 'animate-spin';
+      return 'animation-spin';
     case 'pulse':
-      return 'animate-pulse';
+      return 'animation-pulse';
     case 'glow':
-      return 'animate-glow';
+      return 'animation-glow';
     case 'flash':
-      return 'animate-flash';
+      return 'animation-flash';
     default:
       return '';
   }

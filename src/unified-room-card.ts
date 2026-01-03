@@ -116,7 +116,7 @@ export class UnifiedRoomCard extends LitElement {
       show_icon: true,
       show_state: false,
       show_img_cell: true, // Default to enabled
-      animate_icon: false,
+      icon_animation: 'none',
       tap_action: { action: DEFAULT_TAP_ACTION },
       hold_action: { action: DEFAULT_HOLD_ACTION },
       double_tap_action: { action: DEFAULT_DOUBLE_TAP_ACTION },
@@ -535,7 +535,7 @@ export class UnifiedRoomCard extends LitElement {
       'icon-container': true,
       'with-img-cell': showImgCell,
       active: isActive,
-      [getAnimationClass(this._config?.animate_icon && isActive ? 'pulse' : undefined)]: true,
+      [getAnimationClass(isActive && this._config?.icon_animation !== 'none' ? this._config?.icon_animation : undefined)]: true,
     };
 
     // Build icon container styles

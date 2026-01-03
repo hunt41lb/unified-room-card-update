@@ -9,7 +9,7 @@
 // CARD METADATA
 // =============================================================================
 
-export const CARD_VERSION = '1.0.23';
+export const CARD_VERSION = '1.0.24';
 export const CARD_NAME = 'Unified Room Card Refactor';
 export const CARD_DESCRIPTION = 'A comprehensive room status card for Home Assistant (Refactor Branch)';
 export const CARD_EDITOR_NAME = 'unified-room-card-refactor-editor';
@@ -91,6 +91,7 @@ export const ANIMATION_TYPES = {
   PULSE: 'pulse',
   GLOW: 'glow',
   FLASH: 'flash',
+  SPIN: 'spin',
 } as const;
 
 export type AnimationType = typeof ANIMATION_TYPES[keyof typeof ANIMATION_TYPES];
@@ -101,6 +102,7 @@ export const ANIMATION_OPTIONS = [
   { value: ANIMATION_TYPES.PULSE, label: 'Pulse' },
   { value: ANIMATION_TYPES.GLOW, label: 'Glow' },
   { value: ANIMATION_TYPES.FLASH, label: 'Flash' },
+  { value: ANIMATION_TYPES.SPIN, label: 'Spin' },
 ];
 
 // =============================================================================
