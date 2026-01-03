@@ -128,7 +128,8 @@ export interface IntermittentEntitiesConfig {
 // =============================================================================
 
 export interface ClimateEntitiesConfig {
-  primary_entity?: string;
+  primary_entity?: string;           // Override for climate-primary display (any entity)
+  show_primary_unit?: boolean;       // Show/hide unit for primary entity (default: true)
   temperature_entities?: string[];
   humidity_entities?: string[];
   air_quality_entities?: string[];

@@ -70,7 +70,53 @@ function calculateAverage(
 // =============================================================================
 
 /**
- * Get temperature value from primary entity or averaged from multiple entities
+ * Get primary entity value (can be any entity type)
+ * Auto-detects unit from entity attributes
+ */
+function getPrimaryEntityValue(
+  hass: HomeAssistant,
+  config: ClimateEntitiesConfig | undefined,
+  decimalPlaces: number = 0,
+  showUnits: boolean = true
+): string | null {
+  if (!config?.primary_entity) return null;
+
+  const entity = hass.states[config.primary_entity];
+  if (!entity || isUnavailable(entity)) return null;
+
+  const value = parseFloat(entity.state);
+  if (isNaN(value)) return null;
+
+  // Auto-detect unit from entity attributes
+  const rawUnit = entity.attributes.unit_of_measurement;
+  
+  if (!showUnits) {
+    return value.toFixed(decimalPlaces);
+  }
+
+  // Format unit based on type
+  if (rawUnit) {
+    const unitStr = String(rawUnit);
+    // Handle common unit formatting
+    if (unitStr === '%' || unitStr.startsWith('°')) {
+      // No space before % or °
+      return `${value.toFixed(decimalPlaces)}${unitStr}`;
+    } else if (unitStr.toLowerCase() === 'w' || unitStr.toLowerCase() === 'kw') {
+      // No space for watts
+      return `${value.toFixed(decimalPlaces)}${unitStr}`;
+    } else {
+      // Space before other units (lx, ppm, etc.)
+      return `${value.toFixed(decimalPlaces)} ${unitStr}`;
+    }
+  }
+
+  // No unit available
+  return value.toFixed(decimalPlaces);
+}
+
+/**
+ * Get temperature value averaged from multiple entities
+ * Only used if no primary_entity is specified
  */
 function getTemperatureValue(
   hass: HomeAssistant,
@@ -78,29 +124,15 @@ function getTemperatureValue(
   decimalPlaces: number = 0,
   showUnits: boolean = true
 ): string | null {
-  if (!config) return null;
-
-  // Check for primary entity first
-  if (config.primary_entity) {
-    const entity = hass.states[config.primary_entity];
-    if (entity && !isUnavailable(entity)) {
-      const value = parseFloat(entity.state);
-      if (!isNaN(value)) {
-        // Always show °, but hide F/C if showUnits is false
-        const unit = showUnits ? (entity.attributes.unit_of_measurement || '°') : '°';
-        return `${value.toFixed(decimalPlaces)}${unit}`;
-      }
-    }
+  if (!config?.temperature_entities || config.temperature_entities.length === 0) {
+    return null;
   }
 
-  // Fall back to temperature entities average
-  if (config.temperature_entities && config.temperature_entities.length > 0) {
-    const result = calculateAverage(hass, config.temperature_entities, decimalPlaces);
-    if (result.value !== null) {
-      // Always show °, but hide F/C if showUnits is false
-      const unit = showUnits ? (result.unit || '°') : '°';
-      return `${result.value}${unit}`;
-    }
+  const result = calculateAverage(hass, config.temperature_entities, decimalPlaces);
+  if (result.value !== null) {
+    // Always show °, but hide F/C if showUnits is false
+    const unit = showUnits ? (result.unit || '°') : '°';
+    return `${result.value}${unit}`;
   }
 
   return null;
@@ -242,14 +274,23 @@ export function renderClimateSection(
   const powerDecimalPlaces = powerConfig?.decimal_places ?? 0;
 
   // Individual show unit settings (default to true)
+  const showPrimaryUnit = climateConfig?.show_primary_unit !== false;
   const showTempUnit = climateConfig?.show_temperature_unit !== false;
   const showHumidityUnit = climateConfig?.show_humidity_unit !== false;
   const showAirQualityUnit = climateConfig?.show_air_quality_unit !== false;
   const showIlluminanceUnit = climateConfig?.show_illuminance_unit !== false;
   const showPowerUnit = powerConfig?.show_unit !== false;
 
-  // Calculate values
-  const temperature = getTemperatureValue(hass, climateConfig, decimalPlaces, showTempUnit);
+  // Calculate primary value - check for primary_entity override first, then fall back to temperature
+  let primaryValue: string | null = null;
+  if (climateConfig?.primary_entity) {
+    primaryValue = getPrimaryEntityValue(hass, climateConfig, decimalPlaces, showPrimaryUnit);
+  }
+  if (!primaryValue) {
+    primaryValue = getTemperatureValue(hass, climateConfig, decimalPlaces, showTempUnit);
+  }
+
+  // Calculate secondary values
   const humidity = getHumidityValue(hass, climateConfig, decimalPlaces, showHumidityUnit);
   const airQuality = getAirQualityValue(hass, climateConfig, decimalPlaces, showAirQualityUnit);
   const illuminance = getIlluminanceValue(hass, climateConfig, decimalPlaces, showIlluminanceUnit);
@@ -273,8 +314,8 @@ export function renderClimateSection(
 
   return html`
     <div class="climate-section">
-      ${temperature ? html`
-        <span class="climate-primary">${temperature}</span>
+      ${primaryValue ? html`
+        <span class="climate-primary">${primaryValue}</span>
       ` : nothing}
       ${secondaryValues.length > 0 ? html`
         <div class="climate-secondary">

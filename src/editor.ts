@@ -1005,6 +1005,15 @@ export class UnifiedRoomCardEditor extends LitElement {
               ></ha-selector>
             </div>
           </div>
+          <div class="form-row">
+            <span class="form-label">Show Primary Unit</span>
+            <div class="form-input">
+              <ha-switch
+                .checked=${climateConfig.show_primary_unit !== false}
+                @change=${(e: Event) => this._climateValueChanged('show_primary_unit', (e.target as HTMLInputElement).checked)}
+              ></ha-switch>
+            </div>
+          </div>
           <!-- Temperature Entities -->
           <div class="form-row">
             <span class="form-label">Temperature</span>

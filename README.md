@@ -138,23 +138,36 @@ hold_action:
 
 ### Climate Entities
 
-Display temperature and humidity from one or more sensors. Multiple sensors are automatically averaged.
+Display temperature, humidity, air quality, and illuminance data. Multiple sensors are automatically averaged. Use `primary_entity` to override the main display with any sensor type.
 
 ```yaml
 climate_entities:
+  # Option 1: Use temperature sensors (default)
   temperature_entities:
     - sensor.room_temperature
     - sensor.room_temperature_2  # Will be averaged
   humidity_entities:
     - sensor.room_humidity
-  decimal_places: 1  # Optional, default: 1
+  decimal_places: 1
+
+  # Option 2: Override with any entity as primary display
+  primary_entity: sensor.room_humidity  # Shows humidity as main value
+  show_primary_unit: true               # Auto-detects unit (%)
 ```
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `temperature_entities` | array | Temperature sensor entity IDs |
-| `humidity_entities` | array | Humidity sensor entity IDs |
-| `decimal_places` | number | Decimal places for displayed values (default: 1) |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `primary_entity` | string | - | Override primary display with any sensor entity |
+| `show_primary_unit` | boolean | `true` | Show/hide unit for primary entity (auto-detected) |
+| `temperature_entities` | array | - | Temperature sensor entity IDs (used if no primary_entity) |
+| `show_temperature_unit` | boolean | `true` | Show/hide temperature unit |
+| `humidity_entities` | array | - | Humidity sensor entity IDs |
+| `show_humidity_unit` | boolean | `true` | Show/hide humidity unit |
+| `air_quality_entities` | array | - | Air quality sensor entity IDs |
+| `show_air_quality_unit` | boolean | `true` | Show/hide air quality unit |
+| `illuminance_entities` | array | - | Illuminance sensor entity IDs |
+| `show_illuminance_unit` | boolean | `true` | Show/hide illuminance unit |
+| `decimal_places` | number | `0` | Decimal places for all displayed values |
 
 ### Persistent Entities
 
