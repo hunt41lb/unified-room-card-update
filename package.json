@@ -1,6 +1,6 @@
 {
   "name": "unified-room-card",
-  "version": "1.0.16",
+  "version": "1.0.01",
   "description": "A comprehensive room status card for Home Assistant with support for climate, persistent, and intermittent entities.",
   "main": "dist/unified-room-card.js",
   "module": "dist/unified-room-card.js",
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/unified-room-card"
+    "url": "https://github.com/hunt41lb/unified-room-card"
   },
   "keywords": [
     "home-assistant",
