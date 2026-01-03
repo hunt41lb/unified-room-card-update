@@ -48,7 +48,16 @@ import {
 import './editor';
 
 // Import components
-import { renderClimateSection, renderBatteryEntities, getLowBatteryCount } from './components';
+import { 
+  renderClimateSection, 
+  renderBatteryEntities, 
+  getLowBatteryCount,
+  renderUpdateEntities,
+  getPendingUpdateCount,
+  getSpinInterval,
+  isSpinAnimationEnabled,
+  type UpdateAnimationState
+} from './components';
 
 // =============================================================================
 // CONSOLE REGISTRATION LOG
@@ -77,6 +86,11 @@ export class UnifiedRoomCard extends LitElement {
   private _tapTimeout?: ReturnType<typeof setTimeout>;
   private _tapCount: number = 0;
   private static readonly TAP_DEBOUNCE_MS = 250;
+
+  // Update animation state
+  @state() private _updateAnimationState: UpdateAnimationState = { isSpinning: false };
+  private _updateSpinTimer?: ReturnType<typeof setInterval>;
+  private _spinAnimationTimeout?: ReturnType<typeof setTimeout>;
 
   // ===========================================================================
   // STATIC STYLES
@@ -128,6 +142,54 @@ export class UnifiedRoomCard extends LitElement {
       clearTimeout(this._tapTimeout);
       this._tapTimeout = undefined;
     }
+    // Clean up update animation timers
+    this._stopUpdateSpinTimer();
+  }
+
+  /**
+   * Start or restart the update spin animation timer
+   */
+  private _startUpdateSpinTimer(): void {
+    this._stopUpdateSpinTimer();
+    
+    if (!isSpinAnimationEnabled(this._config?.update_entities)) return;
+    if (!this.hass || getPendingUpdateCount(this.hass, this._config?.update_entities) === 0) return;
+
+    const interval = getSpinInterval(this._config?.update_entities);
+    
+    // Trigger initial spin
+    this._triggerUpdateSpin();
+    
+    // Set up periodic spin
+    this._updateSpinTimer = setInterval(() => {
+      this._triggerUpdateSpin();
+    }, interval);
+  }
+
+  /**
+   * Stop the update spin animation timer
+   */
+  private _stopUpdateSpinTimer(): void {
+    if (this._updateSpinTimer) {
+      clearInterval(this._updateSpinTimer);
+      this._updateSpinTimer = undefined;
+    }
+    if (this._spinAnimationTimeout) {
+      clearTimeout(this._spinAnimationTimeout);
+      this._spinAnimationTimeout = undefined;
+    }
+  }
+
+  /**
+   * Trigger a single spin animation
+   */
+  private _triggerUpdateSpin(): void {
+    this._updateAnimationState = { isSpinning: true };
+    
+    // Stop spinning after animation completes (1 second)
+    this._spinAnimationTimeout = setTimeout(() => {
+      this._updateAnimationState = { isSpinning: false };
+    }, 1000);
   }
 
   /**
@@ -154,6 +216,11 @@ export class UnifiedRoomCard extends LitElement {
   // UPDATE LIFECYCLE
   // ===========================================================================
 
+  protected override firstUpdated(): void {
+    // Start update spin timer if enabled
+    this._startUpdateSpinTimer();
+  }
+
   protected override updated(changedProps: PropertyValues): void {
     super.updated(changedProps);
     
@@ -162,6 +229,11 @@ export class UnifiedRoomCard extends LitElement {
       this.style.gridArea = this._config.grid_area;
     } else {
       this.style.removeProperty('grid-area');
+    }
+
+    // Restart animation timer if config changed
+    if (changedProps.has('_config')) {
+      this._startUpdateSpinTimer();
     }
   }
 
@@ -331,7 +403,7 @@ export class UnifiedRoomCard extends LitElement {
 
     // Check if any status content exists
     const lowBatteryCount = this.hass ? getLowBatteryCount(this.hass, this._config?.battery_entities) : 0;
-    const pendingUpdateCount = this._getPendingUpdateCount();
+    const pendingUpdateCount = this.hass ? getPendingUpdateCount(this.hass, this._config?.update_entities) : 0;
     
     if (!hasPersistent && !hasIntermittent && lowBatteryCount === 0 && pendingUpdateCount === 0) {
       return nothing;
@@ -342,7 +414,7 @@ export class UnifiedRoomCard extends LitElement {
         ${this._renderPersistentEntities(false)}
         ${this._renderIntermittentEntities(false)}
         ${hasBattery && this.hass ? renderBatteryEntities(this.hass, this._config?.battery_entities, this._handleEntityAction.bind(this)) : nothing}
-        ${hasUpdate ? this._renderUpdateEntities() : nothing}
+        ${hasUpdate && this.hass ? renderUpdateEntities(this.hass, this._config?.update_entities, this._handleEntityAction.bind(this), this._updateAnimationState) : nothing}
       </div>
     `;
   }
@@ -1300,129 +1372,6 @@ export class UnifiedRoomCard extends LitElement {
     }
   }
 
-  // ===========================================================================
-  // UPDATE ENTITIES
-  // ===========================================================================
-
-  /**
-   * Get list of entities with pending updates
-   */
-  private _getPendingUpdateEntities(): string[] {
-    if (!this.hass || !this._config?.update_entities) return [];
-
-    const config = this._config.update_entities;
-    const entities = config.entities || [];
-
-    const pendingUpdateEntities: string[] = [];
-    for (const entityId of entities) {
-      const entity = this.hass.states[entityId];
-      if (!entity) continue;
-      
-      // Update entities have state 'on' when update is available
-      if (entity.state === 'on') {
-        pendingUpdateEntities.push(entityId);
-      }
-    }
-
-    return pendingUpdateEntities;
-  }
-
-  /**
-   * Get count of entities with pending updates (for status section check)
-   */
-  private _getPendingUpdateCount(): number {
-    return this._getPendingUpdateEntities().length;
-  }
-
-  /**
-   * Render update entities (like intermittent - only shows pending updates)
-   */
-  private _renderUpdateEntities(): TemplateResult | typeof nothing {
-    const pendingUpdateEntities = this._getPendingUpdateEntities();
-    if (pendingUpdateEntities.length === 0) return nothing;
-
-    const config = this._config?.update_entities;
-    if (!config) return nothing;
-
-    const iconSize = config.icon_size || '21px';
-    const color = config.color || 'var(--state-update-active-color, var(--info-color, #039be5))';
-    const icon = config.icon || 'mdi:package-up';
-
-    return html`
-      ${pendingUpdateEntities.map(entityId => this._renderUpdateEntity(entityId, iconSize, color, icon, config))}
-    `;
-  }
-
-  /**
-   * Render a single update entity
-   */
-  private _renderUpdateEntity(
-    entityId: string, 
-    iconSize: string, 
-    color: string,
-    icon: string,
-    config: { tap_action?: TapActionConfig; hold_action?: TapActionConfig }
-  ): TemplateResult | typeof nothing {
-    if (!this.hass) return nothing;
-
-    const entity = this.hass.states[entityId];
-    if (!entity) return nothing;
-
-    // Use entity icon if available, otherwise use config icon
-    const displayIcon = (entity.attributes.icon as string) || icon;
-
-    const iconStyles: Record<string, string> = {
-      '--mdc-icon-size': iconSize,
-      'color': color,
-    };
-
-    const tapAction = config.tap_action || { action: 'more-info' as const };
-    const holdAction = config.hold_action || { action: 'more-info' as const };
-
-    const title = entity.attributes.friendly_name || entityId;
-    const version = entity.attributes.latest_version || 'available';
-
-    return html`
-      <div 
-        class="intermittent-entity"
-        @click=${(e: Event) => { e.stopPropagation(); this._handleUpdateAction(tapAction, entityId); }}
-        @contextmenu=${(e: Event) => { e.preventDefault(); e.stopPropagation(); this._handleUpdateAction(holdAction, entityId); }}
-        title="${title}: Update ${version}"
-      >
-        <ha-icon
-          .icon=${displayIcon}
-          style=${styleMap(iconStyles)}
-        ></ha-icon>
-      </div>
-    `;
-  }
-
-  /**
-   * Handle update entity action
-   */
-  private _handleUpdateAction(action: TapActionConfig, entityId: string): void {
-    if (!this.hass) return;
-
-    switch (action.action) {
-      case 'more-info':
-        this._fireMoreInfo(entityId);
-        break;
-      case 'navigate':
-        if (action.navigation_path) {
-          window.history.pushState(null, '', action.navigation_path);
-          window.dispatchEvent(new CustomEvent('location-changed', { bubbles: true, composed: true }));
-        }
-        break;
-      case 'url':
-        if (action.url_path) {
-          window.open(action.url_path, '_blank');
-        }
-        break;
-      case 'none':
-      default:
-        break;
-    }
-  }
 
   // ===========================================================================
   // HELPER METHODS

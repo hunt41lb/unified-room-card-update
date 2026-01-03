@@ -1292,16 +1292,16 @@ export class UnifiedRoomCardEditor extends LitElement {
           <ha-icon .icon=${expanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
         </div>
         <div class="accordion-content ${expanded ? 'expanded' : ''}">
-          <p class="section-description">Shows icons for entities with available updates (only when updates pending)</p>
+          <p class="section-description">Shows a single icon when any entities have available updates</p>
           <!-- Icon -->
           <div class="form-row">
-            <span class="form-label">Default Icon</span>
+            <span class="form-label">Icon</span>
             <div class="form-input">
               <ha-selector
                 .hass=${this.hass}
                 .selector=${{ icon: {} }}
                 .value=${updateConfig.icon || ''}
-                placeholder="mdi:package-up"
+                placeholder="mdi:update"
                 @value-changed=${(e: CustomEvent) => this._updateValueChanged('icon', e.detail.value)}
               ></ha-selector>
             </div>
@@ -1330,6 +1330,30 @@ export class UnifiedRoomCardEditor extends LitElement {
               </ha-select>
             </div>
           </div>
+          <!-- Spin Animation -->
+          <div class="form-row">
+            <span class="form-label">Spin Animation</span>
+            <div class="form-input">
+              <ha-switch
+                .checked=${updateConfig.spin_animation === true}
+                @change=${(e: Event) => this._updateValueChanged('spin_animation', (e.target as HTMLInputElement).checked)}
+              ></ha-switch>
+            </div>
+          </div>
+          <!-- Spin Interval (only show if spin animation enabled) -->
+          ${updateConfig.spin_animation === true ? html`
+            <div class="form-row">
+              <span class="form-label">Spin Interval (seconds)</span>
+              <div class="form-input">
+                <ha-selector
+                  .hass=${this.hass}
+                  .selector=${{ number: { min: 10, max: 300, step: 5, mode: 'box' } }}
+                  .value=${updateConfig.spin_interval ?? 60}
+                  @value-changed=${(e: CustomEvent) => this._updateValueChanged('spin_interval', e.detail.value)}
+                ></ha-selector>
+              </div>
+            </div>
+          ` : nothing}
           <!-- Tap Action -->
           <div class="form-row">
             <span class="form-label">Tap Action</span>

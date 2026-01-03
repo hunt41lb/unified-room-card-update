@@ -387,6 +387,46 @@ export const intermittentStyles = css`
 // No additional styles needed - they inherit from intermittent styles
 
 // =============================================================================
+// UPDATE ANIMATION STYLES
+// =============================================================================
+
+export const updateAnimationStyles = css`
+  @keyframes spin-once {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .update-icon.spin-animation {
+    animation: spin-once 1s ease-in-out;
+  }
+
+  .update-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: var(--error-color, #db4437);
+    color: white;
+    font-size: 9px;
+    font-weight: 600;
+    min-width: 14px;
+    height: 14px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+  }
+
+  .intermittent-entity {
+    position: relative;
+  }
+`;
+
+// =============================================================================
 // OVERFLOW INDICATOR STYLES
 // =============================================================================
 
@@ -432,6 +472,7 @@ export const cardStyles = css`
   ${intermittentStyles}
   ${overflowStyles}
   ${unavailableStyles}
+  ${updateAnimationStyles}
 `;
 
 // =============================================================================

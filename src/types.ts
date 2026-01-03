@@ -170,11 +170,14 @@ export interface BatteryEntitiesConfig {
 
 export interface UpdateEntitiesConfig {
   entities?: string[];              // Specific entities to monitor
-  icon?: string;                    // Custom icon (default: mdi:package-up)
+  icon?: string;                    // Custom icon (default: mdi:update)
   icon_size?: string;               // Icon size (default: 21px)
   color?: string;                   // Icon color when updates available
   tap_action?: TapActionConfig;
   hold_action?: TapActionConfig;
+  // Animation settings
+  spin_animation?: boolean;         // Enable periodic spin animation (default: false)
+  spin_interval?: number;           // Seconds between spins (default: 60)
 }
 
 // =============================================================================

@@ -283,13 +283,17 @@ battery_entities:
 
 ### Update Entities
 
-Shows update icons only when firmware updates are available.
+Shows a **single update icon** when any monitored entities have available updates. If multiple updates are pending, a badge shows the count.
+
+> **Periodic Spin Animation:** Enable `spin_animation` to make the icon spin periodically to draw attention to pending updates.
 
 ```yaml
 update_entities:
-  icon: mdi:package-up  # Default icon
+  icon: mdi:update              # Default icon
   icon_size: 21px
   color: var(--state-update-active-color)
+  spin_animation: true          # Enable periodic spin
+  spin_interval: 60             # Spin every 60 seconds
   tap_action:
     action: more-info
   entities:
@@ -299,12 +303,14 @@ update_entities:
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `icon` | string | `mdi:package-up` | Default icon (entity icon used if available) |
+| `icon` | string | `mdi:update` | Icon to display |
 | `icon_size` | string | `21px` | Icon size |
 | `color` | string | `var(--state-update-active-color)` | Icon color |
+| `spin_animation` | boolean | `false` | Enable periodic spin animation |
+| `spin_interval` | number | `60` | Seconds between spins (min: 10) |
 | `tap_action` | object | more-info | Action on tap |
 | `hold_action` | object | more-info | Action on hold |
-| `entities` | array | - | Update entity IDs |
+| `entities` | array | - | Update entity IDs to monitor |
 
 ### Border Entity
 
