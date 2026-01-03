@@ -48,7 +48,7 @@ import {
 import './editor';
 
 // Import components
-import { renderClimateSection } from './components';
+import { renderClimateSection, renderBatteryEntities, getLowBatteryCount } from './components';
 
 // =============================================================================
 // CONSOLE REGISTRATION LOG
@@ -330,7 +330,7 @@ export class UnifiedRoomCard extends LitElement {
     const hasUpdate = this._config?.update_entities;
 
     // Check if any status content exists
-    const lowBatteryCount = this._getLowBatteryCount();
+    const lowBatteryCount = this.hass ? getLowBatteryCount(this.hass, this._config?.battery_entities) : 0;
     const pendingUpdateCount = this._getPendingUpdateCount();
     
     if (!hasPersistent && !hasIntermittent && lowBatteryCount === 0 && pendingUpdateCount === 0) {
@@ -341,7 +341,7 @@ export class UnifiedRoomCard extends LitElement {
       <div class="status-section">
         ${this._renderPersistentEntities(false)}
         ${this._renderIntermittentEntities(false)}
-        ${hasBattery ? this._renderBatteryEntities() : nothing}
+        ${hasBattery && this.hass ? renderBatteryEntities(this.hass, this._config?.battery_entities, this._handleEntityAction.bind(this)) : nothing}
         ${hasUpdate ? this._renderUpdateEntities() : nothing}
       </div>
     `;
@@ -1301,154 +1301,6 @@ export class UnifiedRoomCard extends LitElement {
   }
 
   // ===========================================================================
-  // BATTERY ENTITIES
-  // ===========================================================================
-
-  /**
-   * Get list of entities with low battery
-   */
-  private _getLowBatteryEntities(): string[] {
-    if (!this.hass || !this._config?.battery_entities) return [];
-
-    const config = this._config.battery_entities;
-    const lowThreshold = config.low_threshold ?? 20;
-    const entities = config.entities || [];
-
-    const lowBatteryEntities: string[] = [];
-    for (const entityId of entities) {
-      const entity = this.hass.states[entityId];
-      if (!entity) continue;
-      
-      const level = this._getBatteryLevel(entity);
-      if (level !== null && level <= lowThreshold) {
-        lowBatteryEntities.push(entityId);
-      }
-    }
-
-    return lowBatteryEntities;
-  }
-
-  /**
-   * Get count of entities with low battery (for status section check)
-   */
-  private _getLowBatteryCount(): number {
-    return this._getLowBatteryEntities().length;
-  }
-
-  /**
-   * Get battery level from entity
-   */
-  private _getBatteryLevel(entity: { state: string; attributes: Record<string, unknown> }): number | null {
-    const state = parseFloat(entity.state);
-    if (!isNaN(state)) {
-      return state;
-    }
-    return null;
-  }
-
-  /**
-   * Render battery entities (like intermittent - only shows low batteries)
-   */
-  private _renderBatteryEntities(): TemplateResult | typeof nothing {
-    const lowBatteryEntities = this._getLowBatteryEntities();
-    if (lowBatteryEntities.length === 0) return nothing;
-
-    const config = this._config?.battery_entities;
-    if (!config) return nothing;
-
-    const iconSize = config.icon_size || '21px';
-    const color = 'var(--state-sensor-battery-low-color, var(--error-color, #db4437))';
-
-    return html`
-      ${lowBatteryEntities.map(entityId => this._renderBatteryEntity(entityId, iconSize, color, config))}
-    `;
-  }
-
-  /**
-   * Render a single battery entity
-   */
-  private _renderBatteryEntity(
-    entityId: string, 
-    iconSize: string, 
-    color: string,
-    config: { tap_action?: TapActionConfig; hold_action?: TapActionConfig }
-  ): TemplateResult | typeof nothing {
-    if (!this.hass) return nothing;
-
-    const entity = this.hass.states[entityId];
-    if (!entity) return nothing;
-
-    const level = this._getBatteryLevel(entity);
-    const icon = this._getBatteryIcon(level);
-
-    const iconStyles: Record<string, string> = {
-      '--mdc-icon-size': iconSize,
-      'color': color,
-    };
-
-    const tapAction = config.tap_action || { action: 'more-info' as const };
-    const holdAction = config.hold_action || { action: 'more-info' as const };
-
-    return html`
-      <div 
-        class="intermittent-entity"
-        @click=${(e: Event) => { e.stopPropagation(); this._handleBatteryAction(tapAction, entityId); }}
-        @contextmenu=${(e: Event) => { e.preventDefault(); e.stopPropagation(); this._handleBatteryAction(holdAction, entityId); }}
-        title="${entity.attributes.friendly_name || entityId}: ${level}%"
-      >
-        <ha-icon
-          .icon=${icon}
-          style=${styleMap(iconStyles)}
-        ></ha-icon>
-      </div>
-    `;
-  }
-
-  /**
-   * Get battery icon based on level
-   */
-  private _getBatteryIcon(level: number | null): string {
-    if (level === null) return 'mdi:battery-unknown';
-    if (level <= 10) return 'mdi:battery-alert';
-    if (level <= 20) return 'mdi:battery-10';
-    if (level <= 30) return 'mdi:battery-20';
-    if (level <= 40) return 'mdi:battery-30';
-    if (level <= 50) return 'mdi:battery-40';
-    if (level <= 60) return 'mdi:battery-50';
-    if (level <= 70) return 'mdi:battery-60';
-    if (level <= 80) return 'mdi:battery-70';
-    if (level <= 90) return 'mdi:battery-80';
-    return 'mdi:battery';
-  }
-
-  /**
-   * Handle battery entity action
-   */
-  private _handleBatteryAction(action: TapActionConfig, entityId: string): void {
-    if (!this.hass) return;
-
-    switch (action.action) {
-      case 'more-info':
-        this._fireMoreInfo(entityId);
-        break;
-      case 'navigate':
-        if (action.navigation_path) {
-          window.history.pushState(null, '', action.navigation_path);
-          window.dispatchEvent(new CustomEvent('location-changed', { bubbles: true, composed: true }));
-        }
-        break;
-      case 'url':
-        if (action.url_path) {
-          window.open(action.url_path, '_blank');
-        }
-        break;
-      case 'none':
-      default:
-        break;
-    }
-  }
-
-  // ===========================================================================
   // UPDATE ENTITIES
   // ===========================================================================
 
@@ -1575,6 +1427,33 @@ export class UnifiedRoomCard extends LitElement {
   // ===========================================================================
   // HELPER METHODS
   // ===========================================================================
+
+  /**
+   * Handle entity action (tap/hold) - generic handler for all entity types
+   */
+  private _handleEntityAction(action: TapActionConfig, entityId: string): void {
+    if (!this.hass) return;
+
+    switch (action.action) {
+      case 'more-info':
+        this._fireMoreInfo(entityId);
+        break;
+      case 'navigate':
+        if (action.navigation_path) {
+          window.history.pushState(null, '', action.navigation_path);
+          window.dispatchEvent(new CustomEvent('location-changed', { bubbles: true, composed: true }));
+        }
+        break;
+      case 'url':
+        if (action.url_path) {
+          window.open(action.url_path, '_blank');
+        }
+        break;
+      case 'none':
+      default:
+        break;
+    }
+  }
 
   /**
    * Extract domain from entity_id

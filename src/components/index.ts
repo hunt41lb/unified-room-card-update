@@ -5,3 +5,4 @@
  */
 
 export { renderClimateSection } from './climate-section';
+export { renderBatteryEntities, getLowBatteryCount } from './battery-entities';
