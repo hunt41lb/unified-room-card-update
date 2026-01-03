@@ -216,11 +216,6 @@ export class UnifiedRoomCard extends LitElement {
   // UPDATE LIFECYCLE
   // ===========================================================================
 
-  protected override firstUpdated(): void {
-    // Start update spin timer if enabled
-    this._startUpdateSpinTimer();
-  }
-
   protected override updated(changedProps: PropertyValues): void {
     super.updated(changedProps);
     
@@ -231,14 +226,23 @@ export class UnifiedRoomCard extends LitElement {
       this.style.removeProperty('grid-area');
     }
 
-    // Restart animation timer if config changed
-    if (changedProps.has('_config')) {
-      this._startUpdateSpinTimer();
+    // Start/restart animation timer when hass or config changes
+    if (changedProps.has('hass') || changedProps.has('_config')) {
+      const oldHass = changedProps.get('hass') as HomeAssistant | undefined;
+      // Only restart timer if this is the first hass, or config changed
+      if (!oldHass || changedProps.has('_config')) {
+        this._startUpdateSpinTimer();
+      }
     }
   }
 
   protected override shouldUpdate(changedProps: PropertyValues): boolean {
     if (changedProps.has('_config')) {
+      return true;
+    }
+
+    // Allow animation state changes to trigger re-render
+    if (changedProps.has('_updateAnimationState')) {
       return true;
     }
 
