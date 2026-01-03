@@ -140,6 +140,8 @@ hold_action:
 
 Display temperature, humidity, air quality, and illuminance data. Multiple sensors are automatically averaged. Use `primary_entities` to override the main display with any sensor type.
 
+> **Smart Editor Filtering:** When adding Primary Entities via the visual editor, once you select your first entity, subsequent selections are automatically filtered to show only entities with the same device class (e.g., humidity, temperature, illuminance) to ensure accurate averaging.
+
 ```yaml
 climate_entities:
   # Option 1: Use temperature sensors (default)
@@ -316,14 +318,26 @@ border_style: solid
 
 ### Power Entities
 
-Display power consumption:
+Display power, energy, voltage, or current measurements. Multiple sensors are summed (for power) or can be used for other electrical measurements.
+
+> **Smart Editor Filtering:** When adding Power Entities via the visual editor, before selecting any entities, all power-related sensors (power, energy, voltage, current) are shown. Once you select your first entity, subsequent selections are filtered to show only entities with the same measurement type to ensure consistency.
 
 ```yaml
 power_entities:
   entities:
     - sensor.living_room_power
-  unit_handling: normalize  # normalize, raw, or auto
+    - sensor.kitchen_power        # Multiple power sensors are summed
+  decimal_places: 1
+  show_unit: true
 ```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `entities` | array | - | Power/energy/voltage/current sensor entity IDs |
+| `decimal_places` | number | `0` | Decimal places for displayed value |
+| `show_unit` | boolean | `true` | Show/hide unit (W, kW, etc.) |
+
+**Supported Units:** W, kW, MW (power), Wh, kWh, MWh (energy), V, mV (voltage), A, mA (current)
 
 ## Visual Editor
 

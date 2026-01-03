@@ -999,7 +999,7 @@ export class UnifiedRoomCardEditor extends LitElement {
             <div class="form-input">
               <ha-selector
                 .hass=${this.hass}
-                .selector=${{ entity: { domain: ['sensor', 'climate', 'weather'], multiple: true } }}
+                .selector=${this._getPrimaryEntitySelector()}
                 .value=${climateConfig.primary_entities || []}
                 @value-changed=${(e: CustomEvent) => this._climateValueChanged('primary_entities', e.detail.value)}
               ></ha-selector>
@@ -1138,7 +1138,7 @@ export class UnifiedRoomCardEditor extends LitElement {
             <div class="form-input">
               <ha-selector
                 .hass=${this.hass}
-                .selector=${{ entity: { domain: 'sensor', device_class: 'power', multiple: true } }}
+                .selector=${this._getPowerEntitySelector()}
                 .value=${powerConfig.entities || []}
                 @value-changed=${(e: CustomEvent) => this._powerValueChanged('entities', e.detail.value)}
               ></ha-selector>
@@ -1449,6 +1449,117 @@ export class UnifiedRoomCardEditor extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  // ===========================================================================
+  // ENTITY FILTER HELPERS
+  // ===========================================================================
+
+  /**
+   * Get the device_class of the first primary entity for filtering
+   * Returns undefined if no entities selected or device_class not found
+   */
+  private _getPrimaryEntityDeviceClass(): string | undefined {
+    const primaryEntities = this._config?.climate_entities?.primary_entities;
+    if (!primaryEntities || primaryEntities.length === 0 || !this.hass) {
+      return undefined;
+    }
+
+    const firstEntity = this.hass.states[primaryEntities[0]];
+    if (!firstEntity) return undefined;
+
+    return firstEntity.attributes.device_class as string | undefined;
+  }
+
+  /**
+   * Build the entity selector config for primary entities
+   * Filters by device_class if entities are already selected
+   */
+  private _getPrimaryEntitySelector(): Record<string, unknown> {
+    const deviceClass = this._getPrimaryEntityDeviceClass();
+    
+    if (deviceClass) {
+      // Filter to same device_class as first entity
+      return { 
+        entity: { 
+          domain: 'sensor', 
+          device_class: deviceClass, 
+          multiple: true 
+        } 
+      };
+    }
+    
+    // No entities selected - allow any sensor
+    return { 
+      entity: { 
+        domain: ['sensor', 'climate', 'weather'], 
+        multiple: true 
+      } 
+    };
+  }
+
+  /**
+   * Get the unit_of_measurement of the first power entity for filtering
+   * Returns undefined if no entities selected
+   */
+  private _getPowerEntityUnit(): string | undefined {
+    const powerEntities = this._config?.power_entities?.entities;
+    if (!powerEntities || powerEntities.length === 0 || !this.hass) {
+      return undefined;
+    }
+
+    const firstEntity = this.hass.states[powerEntities[0]];
+    if (!firstEntity) return undefined;
+
+    const unit = firstEntity.attributes.unit_of_measurement;
+    return typeof unit === 'string' ? unit : undefined;
+  }
+
+  /**
+   * Build the entity selector config for power entities
+   * Before selection: Shows entities with power-related device classes
+   * After selection: Filters to same unit_of_measurement as first entity
+   */
+  private _getPowerEntitySelector(): Record<string, unknown> {
+    const unit = this._getPowerEntityUnit();
+    
+    if (unit) {
+      // Filter to same unit as first entity
+      // We use a filter function approach via device_class matching
+      // Since ha-selector doesn't support unit filtering directly,
+      // we'll use device_class as a proxy
+      const deviceClassMap: Record<string, string[]> = {
+        'W': ['power'],
+        'kW': ['power'],
+        'MW': ['power'],
+        'Wh': ['energy'],
+        'kWh': ['energy'],
+        'MWh': ['energy'],
+        'A': ['current'],
+        'mA': ['current'],
+        'V': ['voltage'],
+        'mV': ['voltage'],
+      };
+      
+      const deviceClasses = deviceClassMap[unit] || ['power', 'energy', 'voltage', 'current'];
+      
+      return { 
+        entity: { 
+          domain: 'sensor', 
+          device_class: deviceClasses,
+          multiple: true 
+        } 
+      };
+    }
+    
+    // No entities selected - allow any power-related sensors
+    return { 
+      entity: { 
+        domain: 'sensor', 
+        device_class: ['power', 'energy', 'voltage', 'current'],
+        multiple: true 
+      } 
+    };
   }
 
   // ===========================================================================
