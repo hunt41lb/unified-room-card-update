@@ -1,7 +1,7 @@
 # Unified Room Card
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-[![Version](https://img.shields.io/badge/version-1.0.16-blue)](https://github.com/hunt41lb/unified-room-card/releases)
+[![Version](https://img.shields.io/badge/version-1.0.01-blue)](https://github.com/hunt41lb/unified-room-card/releases)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 A comprehensive room status card for Home Assistant that consolidates climate data, persistent entities, intermittent entities, battery warnings, and firmware updates into a single, customizable card.
