@@ -1,10 +1,12 @@
-# Unified Room Card
+# Unified Room Card Refactor
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-[![Version](https://img.shields.io/badge/version-1.0.01-blue)](https://github.com/hunt41lb/unified-room-card/releases)
+[![Version](https://img.shields.io/badge/version-1.0.16-blue)](https://github.com/hunt41lb/unified-room-card-refactor/releases)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 A comprehensive room status card for Home Assistant that consolidates climate data, persistent entities, intermittent entities, battery warnings, and firmware updates into a single, customizable card.
+
+> **Note:** This is the refactor branch for development. For the stable version, see [unified-room-card](https://github.com/hunt41lb/unified-room-card).
 
 ![Card Preview](docs/images/preview.png)
 
@@ -27,19 +29,19 @@ A comprehensive room status card for Home Assistant that consolidates climate da
 2. Click on "Frontend"
 3. Click the three dots in the top right corner
 4. Select "Custom repositories"
-5. Add `https://github.com/hunt41lb/unified-room-card` and select "Lovelace" as the category
-6. Search for "Unified Room Card" and install it
+5. Add `https://github.com/hunt41lb/unified-room-card-refactor` and select "Lovelace" as the category
+6. Search for "Unified Room Card Refactor" and install it
 7. Refresh your browser
 
 ### Manual Installation
 
-1. Download `unified-room-card.js` from the [latest release](https://github.com/hunt41lb/unified-room-card/releases)
+1. Download `unified-room-card-refactor.js` from the [latest release](https://github.com/hunt41lb/unified-room-card-refactor/releases)
 2. Copy it to your `config/www` folder
 3. Add the resource in your Lovelace configuration:
 
 ```yaml
 resources:
-  - url: /local/unified-room-card.js
+  - url: /local/unified-room-card-refactor.js
     type: module
 ```
 
@@ -48,7 +50,7 @@ resources:
 ### Minimal Configuration
 
 ```yaml
-type: custom:unified-room-card
+type: custom:unified-room-card-refactor
 name: Living Room
 entity: light.living_room
 ```
@@ -56,7 +58,7 @@ entity: light.living_room
 ### Typical Room Configuration
 
 ```yaml
-type: custom:unified-room-card
+type: custom:unified-room-card-refactor
 name: Living Room
 entity: light.living_room
 icon: mdi:sofa
@@ -101,7 +103,7 @@ update_entities:
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `type` | string | **Required** | `custom:unified-room-card` |
+| `type` | string | **Required** | `custom:unified-room-card-refactor` |
 | `name` | string | - | Card name displayed in the header |
 | `entity` | string | - | Main entity for card state and actions |
 | `icon` | string | auto | Main icon (auto-detected from entity if not specified) |
@@ -352,8 +354,8 @@ The card uses Home Assistant's CSS variables for colors:
 
 ```bash
 # Clone the repository
-git clone https://github.com/hunt41lb/unified-room-card.git
-cd unified-room-card
+git clone https://github.com/hunt41lb/unified-room-card-refactor.git
+cd unified-room-card-refactor
 
 # Install dependencies
 npm install
@@ -375,6 +377,6 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## Support
 
-- 🐛 [Report a bug](https://github.com/hunt41lb/unified-room-card/issues)
-- 💡 [Request a feature](https://github.com/hunt41lb/unified-room-card/issues)
+- 🐛 [Report a bug](https://github.com/hunt41lb/unified-room-card-refactor/issues)
+- 💡 [Request a feature](https://github.com/hunt41lb/unified-room-card-refactor/issues)
 - ⭐ Star the repository if you find it useful!

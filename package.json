@@ -1,9 +1,9 @@
 {
-  "name": "unified-room-card",
-  "version": "1.0.01",
-  "description": "A comprehensive room status card for Home Assistant with support for climate, persistent, and intermittent entities.",
-  "main": "dist/unified-room-card.js",
-  "module": "dist/unified-room-card.js",
+  "name": "unified-room-card-refactor",
+  "version": "1.0.16",
+  "description": "A comprehensive room status card for Home Assistant (Refactor Branch)",
+  "main": "dist/unified-room-card-refactor.js",
+  "module": "dist/unified-room-card-refactor.js",
   "type": "module",
   "scripts": {
     "build": "rollup -c",
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/hunt41lb/unified-room-card"
+    "url": "https://github.com/hunt41lb/unified-room-card-refactor"
   },
   "keywords": [
     "home-assistant",
@@ -43,7 +43,7 @@
     "lit": "^3.1.2"
   },
   "hacs": {
-    "name": "Unified Room Card",
-    "filename": "unified-room-card.js"
+    "name": "Unified Room Card Refactor",
+    "filename": "unified-room-card-refactor.js"
   }
 }

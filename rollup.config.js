@@ -8,7 +8,7 @@ const production = !process.env.ROLLUP_WATCH;
 export default {
   input: 'src/unified-room-card.ts',
   output: {
-    file: 'dist/unified-room-card.js',
+    file: 'dist/unified-room-card-refactor.js',
     format: 'es',
     sourcemap: !production,
   },
