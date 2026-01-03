@@ -1,5 +1,5 @@
 /**
- * Unified Room Card - Constants
+ * Unified Room Card Refactor - Constants
  * 
  * Central source of truth for all card metadata, default values,
  * and configuration constants. Update values here for global changes.
@@ -9,14 +9,14 @@
 // CARD METADATA
 // =============================================================================
 
-export const CARD_VERSION = '1.0.01';
-export const CARD_NAME = 'unified-room-card';
-export const CARD_DESCRIPTION = 'A comprehensive room status card for Home Assistant with support for climate, persistent, and intermittent entities.';
-export const CARD_EDITOR_NAME = 'unified-room-card-editor';
+export const CARD_VERSION = '1.0.16';
+export const CARD_NAME = 'Unified Room Card Refactor';
+export const CARD_DESCRIPTION = 'A comprehensive room status card for Home Assistant (Refactor Branch)';
+export const CARD_EDITOR_NAME = 'unified-room-card-refactor-editor';
 
 // Used for console logging and registration
-export const CARD_TAG = 'unified-room-card';
-export const CARD_EDITOR_TAG = 'unified-room-card-editor';
+export const CARD_TAG = 'unified-room-card-refactor';
+export const CARD_EDITOR_TAG = 'unified-room-card-refactor-editor';
 
 // =============================================================================
 // DEFAULT GRID LAYOUT
