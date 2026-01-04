@@ -1,0 +1,1468 @@
+button_card_templates:
+  sensor_popup_lights:
+    variables:
+      var_name: Card Name
+      var_entity: light.entity
+      var_icon: mdi:lightbulb
+      var_label: Room
+    name: '[[[ return variables.var_name ]]]'
+    entity: '[[[ return variables.var_entity ]]]'
+    triggers_update: all
+    icon: '[[[ return variables.var_icon ]]]'
+    label: '[[[ return variables.var_label ]]]'
+    show_label: true
+    show_state: false
+    tap_action:
+      action: toggle
+    double_tap_action:
+      action: more-info
+    styles:
+      card:
+        - background-color: |-
+            [[[
+              if (entity.state === 'on') {
+                return 'var(--ha-card-background)';
+              } else {
+                return 'var(--ha-card-background-inactive)';
+              }
+            ]]]
+        - border: |-
+            [[[
+              if (entity.state === 'on') {
+                return '1px solid var(--primary-text-color)';
+              }
+            ]]]
+        - padding: 6px
+        - height: 97px
+      grid:
+        - grid-template-areas: '"n i" "l l"'
+        - grid-template-rows: 1fr min-content
+        - grid-template-columns: min-content
+      name:
+        - justify-self: start
+        - align-self: end
+        - padding: 0 0 5px 14px
+      label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - padding: 0 0 1px 14px
+      icon:
+        - width: 35px
+        - color: |-
+            [[[
+            if (entity.state === "on" && entity.attributes.rgb_color) {
+              return "rgb(" + entity.attributes.rgb_color.join(",") + ")";
+            } else {
+              return "var(--primary-text-color)";
+            }
+            ]]]
+      img_cell:
+        - justify-self: end
+        - align-self: start
+        - border-radius: 100%
+        - width: 50px
+        - height: 50px
+        - background-color: |-
+            [[[
+            if (entity.state === "on" && entity.attributes.rgb_color) {
+              return "rgba(" + entity.attributes.rgb_color.join(",") + ",0.2)";
+            } else {
+              return "var(--inactive-img-cell)";
+            }
+            ]]]
+  sensor_popup_power:
+    variables:
+      var_name: Card Name
+      var_entity: switch.entity
+      var_icon: mdi:lightning-bolt
+      var_label: Room
+      var_power: sensor.power
+    name: '[[[ return variables.var_name ]]]'
+    entity: '[[[ return variables.var_entity ]]]'
+    triggers_update: all
+    label: '[[[ return variables.var_label ]]]'
+    show_label: true
+    icon: '[[[ return variables.var_icon ]]]'
+    custom_fields:
+      e: |
+        [[[
+          
+          var powerEntity = variables.var_power;
+
+          var power = states[powerEntity].state;
+
+          return `
+            <span style="font-size:12px;font-weight:400;opacity:0.7">${parseFloat(power).toFixed(0)}W</span>
+          `;
+        ]]]
+    styles:
+      card:
+        - background-color: |-
+            [[[
+              if (entity.state === 'on') {
+                return 'var(--ha-card-background)';
+              } else {
+                return 'var(--ha-card-background-inactive)';
+              }
+            ]]]
+        - border: |-
+            [[[
+              if (entity.state === 'on') {
+                return '1px solid var(--yellow-color)';
+              }
+            ]]]
+        - padding: 6px
+        - height: 97px
+      grid:
+        - grid-template-areas: '"n i" "l e"'
+        - grid-template-rows: 1fr min-content
+        - grid-template-columns: min-content
+      name:
+        - justify-self: start
+        - align-self: end
+        - padding: 0 0 5px 14px
+      label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - padding: 0 0 1px 14px
+      icon:
+        - width: 35px
+        - height: 35px
+        - color: |-
+            [[[
+              if (entity.state === 'on') {
+                return 'var(--yellow-color)';
+              } else {
+                return 'var(--state-binary_sensor-active-color)';
+              }
+            ]]]
+      img_cell:
+        - justify-self: end
+        - align-self: start
+        - border-radius: 100%
+        - width: 50px
+        - height: 50px
+        - background-color: var(--inactive-img-cell)
+      custom_fields:
+        e:
+          - justify-self: end
+          - font-weight: 300
+          - color: var(--muted-foreground)
+          - padding-right: 5px
+  sensor_popup_window:
+    variables:
+      var_name: Card Name
+      var_entity: switch.entity
+      var_icon: mdi:window-closed
+      var_label: Room
+    name: '[[[ return variables.var_name ]]]'
+    entity: '[[[ return variables.var_entity ]]]'
+    triggers_update: all
+    icon: '[[[ return variables.var_icon ]]]'
+    label: '[[[ return variables.var_label ]]]'
+    show_label: true
+    show_state: true
+    tap_action:
+      action: toggle
+    double_tap_action:
+      action: more-info
+    styles:
+      card:
+        - background-color: |-
+            [[[
+              if (entity.state === 'on') {
+                return 'var(--ha-card-background)';
+              } else {
+                return 'var(--ha-card-background-inactive)';
+              }
+            ]]]
+        - border: |-
+            [[[
+              if (entity.state === 'on') {
+                return '1px solid var(--state-binary_sensor-active-color)';
+              }
+            ]]]
+        - padding: 6px
+        - height: 97px
+      grid:
+        - grid-template-areas: '"n i" "l s"'
+        - grid-template-rows: 1fr min-content
+        - grid-template-columns: min-content
+      name:
+        - justify-self: start
+        - align-self: end
+        - padding: 0 0 5px 14px
+      label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - padding: 0 0 1px 14px
+      state:
+        - justify-self: end
+        - font-size: 14px
+        - padding: 0 0 1px 14px
+        - color: |-
+            [[[
+              if (entity.state === 'on') {
+                return 'var(--state-binary_sensor-active-color)';
+              } else {
+                return 'var(--secondary-text-color)';
+              }
+            ]]]
+      icon:
+        - width: 35px
+        - color: |-
+            [[[
+              if (entity.state === 'on') {
+                return 'var(--state-binary_sensor-active-color)';
+              } else {
+                return 'var(--secondary-text-color)';
+              }
+            ]]]
+      img_cell:
+        - justify-self: end
+        - align-self: start
+        - border-radius: 100%
+        - width: 50px
+        - height: 50px
+        - background-color: var(--inactive-img-cell)
+  popup_door:
+    variables:
+      var_name: Card Name
+      var_entity: switch.entity
+      var_icon: mdi:door-closed
+      var_label: Room
+    name: '[[[ return variables.var_name ]]]'
+    entity: '[[[ return variables.var_entity ]]]'
+    triggers_update: all
+    icon: '[[[ return variables.var_icon ]]]'
+    label: '[[[ return variables.var_label ]]]'
+    show_label: true
+    show_state: true
+    tap_action:
+      action: toggle
+    double_tap_action:
+      action: more-info
+    styles:
+      card:
+        - background-color: |-
+            [[[
+              if (entity.state === 'locked') {
+                return 'var(--ha-card-background-inactive)';
+              } else {
+                return 'var(--ha-card-background)';
+              }
+            ]]]
+        - border: |-
+            [[[
+              if (entity.state === 'on') {
+                return '1px solid var(--state-lock-locked-color)';
+              }
+            ]]]
+        - padding: 6px
+        - height: 97px
+      grid:
+        - grid-template-areas: '"n i" "l s"'
+        - grid-template-rows: 1fr min-content
+        - grid-template-columns: min-content
+      name:
+        - justify-self: start
+        - align-self: end
+        - padding: 0 0 5px 14px
+      label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - padding: 0 0 1px 14px
+      state:
+        - justify-self: end
+        - font-size: 14px
+        - padding: 0 0 1px 14px
+        - color: |-
+            [[[
+              if (entity.state === 'locked') {
+                return 'var(--secondary-text-color)';
+              } else {
+                return 'var(--state-binary_sensor-active-color)';
+              }
+            ]]]
+      icon:
+        - width: 35px
+        - color: |-
+            [[[
+              if (entity.state === 'locked') {
+                return 'var(--state-lock-locked-color)';
+              } else {
+                return 'var(--state-binary_sensor-active-color)';
+              }
+            ]]]
+      img_cell:
+        - justify-self: end
+        - align-self: start
+        - border-radius: 100%
+        - width: 50px
+        - height: 50px
+        - background-color: var(--inactive-img-cell)
+  popup_sensor:
+    variables:
+      var_name: Card Name
+      var_entity: switch.entity
+      var_icon: mdi:door-closed
+      var_label: Room
+    name: '[[[ return variables.var_name ]]]'
+    entity: '[[[ return variables.var_entity ]]]'
+    triggers_update: all
+    icon: '[[[ return variables.var_icon ]]]'
+    label: '[[[ return variables.var_label ]]]'
+    show_label: true
+    show_state: true
+    tap_action:
+      action: toggle
+    double_tap_action:
+      action: more-info
+    styles:
+      card:
+        - background-color: |-
+            [[[
+              if (entity.state === 'on') {
+                return 'var(--ha-card-background)';
+              } else {
+                return 'var(--ha-card-background-inactive)';
+              }
+            ]]]
+        - border: |-
+            [[[
+              if (entity.state === 'on') {
+                return '1px solid var(--primary-text-color)';
+              }
+            ]]]
+        - padding: 6px
+        - height: 97px
+      grid:
+        - grid-template-areas: '"n i" "l s"'
+        - grid-template-rows: 1fr min-content
+        - grid-template-columns: min-content
+      name:
+        - justify-self: start
+        - align-self: end
+        - padding: 0 0 5px 14px
+      label:
+        - justify-self: start
+        - font-size: 12px
+        - color: var(--secondary-text-color)
+        - padding: 0 0 1px 14px
+      state:
+        - justify-self: end
+        - font-size: 14px
+        - padding: 0 0 1px 14px
+        - color: |-
+            [[[
+              if (entity.state === 'on') {
+                return 'var(--state-binary_sensor-active-color)';
+              } else {
+                return 'var(--secondary-text-color)';
+              }
+            ]]]
+      icon:
+        - width: 35px
+        - color: |-
+            [[[
+              if (entity.state === 'on') {
+                return 'var(--warning)';
+              } else {
+                return 'var(--primary-text-color)';
+              }
+            ]]]
+      img_cell:
+        - justify-self: end
+        - align-self: start
+        - border-radius: 100%
+        - width: 50px
+        - height: 50px
+        - background-color: var(--inactive-img-cell)
+views:
+  - title: Home
+    type: masonry
+    cards:
+      - type: custom:layout-card
+        layout_type: custom:grid-layout
+        layout:
+          grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr
+          grid-template-rows: auto
+          grid-template-areas: >
+            "weather weather weather weather weather weather"  "weather weather
+            weather weather weather weather" "home_lights home_lights
+            home_lights home_lights home_lights home_lights" "home_lights
+            home_lights home_lights home_lights home_lights home_lights"
+            "bedroom bedroom bedroom guest_bedroom guest_bedroom guest_bedroom"
+            "bedroom bedroom bedroom guest_bedroom guest_bedroom guest_bedroom"
+            "dining_room dining_room dining_room kitchen kitchen kitchen"
+            "dining_room dining_room dining_room kitchen kitchen kitchen"
+            "office office office living_room living_room living_room"  "office
+            office office living_room living_room living_room" "mudroom mudroom
+            mudroom server server server" "mudroom mudroom mudroom server server
+            server" "backdoor backdoor backdoor frontdoor frontdoor frontdoor"
+            "backdoor backdoor backdoor frontdoor frontdoor frontdoor"
+            "main_bathroom guest_bathroom laundry_room balcony garage stairs"
+            "surveillance surveillance ac ac settings settings" 
+          alignment: center
+        cards:
+          - type: custom:button-card
+            entity: sensor.weather_card
+            view_layout:
+              grid-area: weather
+            show_icon: false
+            name: |
+              [[[ 
+                return `Hello, ${user.name.split(' ')[0]}`;
+              ]]]
+            show_name: true
+            label: |
+              [[[ return entity.attributes.desc ]]]
+            show_label: true
+            custom_fields:
+              icon: >
+                [[[
+
+                return '<img src = "' + entity.state +  '" width="120"
+                height="120" />'
+
+                ]]]
+              temperature: |
+                [[[ return entity.attributes.temperature + '°F' ]]]
+              feel_like: >
+                [[[ return 'Feels Like: ' + entity.attributes.feels_like + '°F'
+                ]]]
+            styles:
+              grid:
+                - grid-template-areas: >-
+                    "n n n n"   "icon icon temperature temperature"  "icon icon
+                    feel_like feel_like"  "l l l l"
+                - grid-template-columns: 1fr 1fr 1fr 1fr
+                - grid-template-rows: 1fr 1fr 1fr 1fr
+              card:
+                - padding: 5px
+                - height: 180px
+              name:
+                - justify-self: center
+                - font-size: 20px
+                - font-weight: 600
+              label:
+                - justify-self: center
+                - align-self: center
+                - font-size: 18px
+                - font-weight: 600
+                - margin-bottom: 10px
+              custom_fields:
+                temperature:
+                  - font-size: 40px
+                  - font-weight: 400
+                  - padding-top: 20px
+                feel_like:
+                  - font-size: 12px
+                  - font-weight: 400
+                  - padding-top: 7px
+          - type: custom:button-card
+            icon: mdi:home
+            name: Lights On
+            show_name: false
+            view_layout:
+              grid-area: home_lights
+            tap_action:
+              action: call-service
+              service: light.toggle
+              service_data:
+                entity_id: light.home_lights
+            double_tap_action:
+              action: navigate
+              navigation_path: '#home-environment'
+            custom_fields:
+              lights_count: |
+                [[[ 
+                  var count = states['sensor.home_lights_on'].state;
+                  var color = 'var(--primary-text-color)';
+                  if (count > 0) {
+                    color = 'var(--yellow-color)';
+                  }
+                  return `<ha-icon icon="mdi:home-lightbulb" style="width: 20px; height: 20px; color: ${color};"></ha-icon> <span style="font-size: 14px; font-weight: 500; opacity:0.7; color: ${color};">${count} Lights On</span>`;
+                ]]]
+              temperature: |
+                [[[ 
+                  var temp = Math.round(states['sensor.home_average_temperature'].state);
+                  var color = 'var(--primary-text-color)';
+                  if (temp > 74) {
+                    color = 'var(--warning)';
+                  } else if (temp < 69) {
+                    color = 'var(--blue-color)';
+                  }
+                  return `<ha-icon icon="mdi:home-thermometer" style="width: 20px; height: 20px; color: ${color};"></ha-icon> <span style="font-size: 14px; font-weight: 500; opacity:0.7; color: var(--primary-text-color);">${temp}°F</span>`;
+                ]]]
+              humidity: |
+                [[[ 
+                  var hum = Math.round(states['sensor.home_average_humidity'].state);
+                  var color = 'var(--primary-text-color)';
+                  if (hum > 59) {
+                    color = 'var(--warning)';
+                  } else if (hum < 20) {
+                    color = 'var(--blue-color)';
+                  }
+                  return `<ha-icon icon="mdi:home-percent" style="width: 20px; height: 20px; color: ${color};"></ha-icon> <span style="font-size: 14px; font-weight: 500; opacity:0.7; color: var(--primary-text-color);">${hum}%</span>`;
+                ]]]
+              illuminance: |
+                [[[ 
+                  var illum = Math.round(states['sensor.home_average_illuminance'].state);
+                  var color = 'var(--primary-text-color)';
+                  if (illum > 200) {
+                    color = 'var(--warning)';
+                  } else if (illum < 0) {
+                    color = 'var(--yellow-color)';
+                  }
+                  return `<ha-icon icon="mdi:brightness-5" style="width: 20px; height: 20px; color: ${color};"></ha-icon> <span style="font-size: 14px; font-weight: 500; opacity:0.7; color: var(--primary-text-color);">${illum} lx</span>`;
+                ]]]
+              power: |
+                [[[ 
+                  var power = Math.round(states['sensor.home_power_consumption_w'].state);
+                  var color = 'var(--primary-text-color)';
+                  if (power > 2000) {
+                    color = 'var(--warning)';
+                  } else if (power < 100) {
+                    color = 'var(--yellow-color)';
+                  }
+                  return `<ha-icon icon="mdi:home-lightning-bolt" style="width: 20px; height: 20px; color: ${color};"></ha-icon> <span style="font-size: 14px; font-weight: 500; opacity:0.7; color: var(--primary-text-color);">${power}W</span>`;
+                ]]]
+            styles:
+              card:
+                - padding: 4px
+                - height: 100%
+              grid:
+                - grid-template-areas: >-
+                    "i i i i i" "lights_count temperature humidity illuminance
+                    power"
+                - grid-template-rows: auto
+                - grid-template-columns: auto
+              img_cell:
+                - justify-self: center
+                - align-self: center
+                - border-radius: 100%
+                - width: 50px
+                - height: 50px
+              icon:
+                - width: 45px
+                - justify-self: center
+                - align-self: center
+                - color: |-
+                    [[[
+                      if (states['sensor.home_lights_on'].state !== '0') {
+                        return "var(--yellow-color)";
+                      } else {
+                        return "var(--blue-color)";
+                      }
+                    ]]]
+              custom_fields:
+                lights_count:
+                  - justify-self: center
+                  - align-self: center
+                  - padding: 0 0 8px 4px
+                temperature:
+                  - justify-self: center
+                  - align-self: center
+                  - padding: 0 0 8px 14px
+                humidity:
+                  - justify-self: center
+                  - align-self: center
+                  - padding: 0 0 8px 14px
+                illuminance:
+                  - justify-self: center
+                  - align-self: center
+                  - padding: 0 0 8px 14px
+                power:
+                  - justify-self: center
+                  - align-self: center
+                  - padding: 0 0 8px 14px
+          - type: custom:unified-room-card
+            name: Bedroom
+            entity: light.main_bedroom
+            show_name: true
+            show_icon: true
+            icon_position: auto
+            tap_action:
+              action: toggle
+            hold_action:
+              action: none
+            double_tap_action:
+              action: navigate
+            grid_area: bedroom
+            icon: mdi:bed-king
+            climate_entities:
+              temperature_entities:
+                - sensor.main_bedroom_air_temperature
+              show_air_quality_unit: false
+              show_illuminance_unit: false
+              show_temperature_unit: false
+              humidity_entities:
+                - sensor.main_bedroom_humidity
+            power_entities:
+              entities:
+                - sensor.main_bedroom_brooke_power_strip_electric_consumption_w
+                - sensor.main_bedroom_thomas_power_strip_electric_consumption_w
+            icon_horizontal_position: right
+            icon_vertical_position: top
+            persistent_entities:
+              position: right
+            intermittent_entities:
+              entities:
+                - entity: binary_sensor.main_bedroom_motion_detection
+                  icon: mdi:motion-sensor
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+                - entity: media_player.atv_bedroom_2
+                  icon: mdi:apple
+                  states:
+                    - state: ''
+                      icon: ''
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+            battery_entities:
+              tap_action:
+                action: more-info
+              hold_action:
+                action: more-info
+              entities:
+                - sensor.main_bedroom_battery_level
+            update_entities:
+              tap_action:
+                action: more-info
+              hold_action:
+                action: more-info
+              entities:
+                - update.main_bedroom_firmware
+              icon: mdi:update
+            border_entity: light.main_bedroom
+            border_width: 1px
+            border_style: solid
+            icon_animation: spin
+            show_state: false
+            show_img_cell: true
+            spin_duration: 120
+          - type: custom:unified-room-card
+            name: Guest Bedroom
+            entity: light.guest_room_light_dimmer
+            show_name: true
+            show_icon: true
+            icon_horizontal_position: right
+            icon_vertical_position: top
+            tap_action:
+              action: toggle
+            hold_action:
+              action: none
+            double_tap_action:
+              action: more-info
+            icon: mdi:bed-single
+            grid_area: guest_bedroom
+            intermittent_entities:
+              entities:
+                - entity: binary_sensor.guest_bedroom_motion_detection
+                  icon: mdi:motion-sensor
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+            persistent_entities:
+              position: right
+            battery_entities:
+              tap_action:
+                action: more-info
+              hold_action:
+                action: more-info
+              entities:
+                - sensor.guest_bedroom_battery_level
+            update_entities:
+              tap_action:
+                action: more-info
+              hold_action:
+                action: more-info
+              entities:
+                - update.guest_bedroom_firmware
+                - update.guest_room_light_dimmer_firmware
+                - update.guest_room_outlet_firmware
+            climate_entities:
+              temperature_entities:
+                - sensor.guest_bedroom_air_temperature
+              show_temperature_unit: false
+              humidity_entities:
+                - sensor.guest_bedroom_humidity
+            power_entities:
+              entities:
+                - sensor.guest_room_outlet_electric_consumption_w
+            border_entity: light.guest_room_light_dimmer
+            border_width: 1px
+            border_style: solid
+          - type: custom:unified-room-card
+            name: Dining Room
+            entity: light.dining_room
+            show_name: true
+            show_icon: true
+            icon_horizontal_position: right
+            icon_vertical_position: top
+            tap_action:
+              action: toggle
+            hold_action:
+              action: none
+            double_tap_action:
+              action: more-info
+            icon: mdi:table-chair
+            grid_area: dining_room
+            climate_entities:
+              temperature_entities:
+                - sensor.dining_room_01_air_temperature
+              show_temperature_unit: false
+              humidity_entities:
+                - sensor.dining_room_01_humidity
+              show_air_quality_unit: false
+              show_illuminance_unit: false
+            power_entities:
+              entities:
+                - sensor.dining_room_outlet_electric_consumption_w
+            persistent_entities:
+              position: right
+            intermittent_entities:
+              entities:
+                - entity: binary_sensor.dining_room_01_motion_detection
+                  icon: mdi:motion-sensor
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+            battery_entities:
+              entities:
+                - sensor.dining_room_01_battery_level
+                - sensor.range_extender_battery_level_2
+              tap_action:
+                action: more-info
+              hold_action:
+                action: more-info
+            update_entities:
+              entities:
+                - update.dining_room_01_firmware
+                - update.dining_room_outlet_firmware
+                - update.range_extender_firmware_2
+              tap_action:
+                action: more-info
+              hold_action:
+                action: more-info
+              spin_animation: true
+              spin_interval: 10
+            border_entity: light.dining_room
+            border_width: 1px
+            border_style: solid
+          - type: custom:unified-room-card
+            name: Kitchen
+            entity: light.kitchen
+            show_name: true
+            show_icon: true
+            icon_horizontal_position: right
+            icon_vertical_position: top
+            tap_action:
+              action: toggle
+            hold_action:
+              action: none
+            double_tap_action:
+              action: more-info
+            icon: mdi:fridge
+            grid_area: kitchen
+            climate_entities:
+              temperature_entities:
+                - sensor.kitchen_01_air_temperature
+              show_temperature_unit: false
+              humidity_entities:
+                - sensor.kitchen_01_humidity
+              show_illuminance_unit: false
+              show_air_quality_unit: false
+            intermittent_entities:
+              entities:
+                - entity: binary_sensor.kitchen_01_motion_detection
+                  icon: mdi:motion-sensor
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+                - entity: binary_sensor.kitchen_window_is_open
+                  icon: mdi:window-open
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+            persistent_entities:
+              position: right
+            battery_entities:
+              tap_action:
+                action: more-info
+              hold_action:
+                action: more-info
+              entities:
+                - sensor.kitchen_window_battery_level
+                - sensor.kitchen_01_battery_level
+            update_entities:
+              tap_action:
+                action: more-info
+              hold_action:
+                action: more-info
+              icon: mdi:update
+              entities:
+                - update.kitchen_window_firmware
+                - update.kitchen_01_firmware
+                - update.kitchen_outlet_01_firmware
+              spin_animation: true
+              spin_interval: 10
+            border_entity: light.kitchen
+            border_width: 1px
+            power_entities:
+              entities:
+                - sensor.kitchen_outlet_01_electric_consumption_w
+          - type: custom:unified-room-card
+            name: Office
+            entity: light.office
+            show_name: true
+            show_icon: true
+            icon_position: auto
+            tap_action:
+              action: toggle
+            hold_action:
+              action: none
+            double_tap_action:
+              action: navigate
+              navigation_path: '#main-bedroom'
+            grid_area: office
+            icon: mdi:desktop-classic
+            climate_entities:
+              temperature_entities:
+                - sensor.office_sensor_01_air_temperature
+                - sensor.office_sensor_02_air_temperature
+              humidity_entities:
+                - sensor.office_sensor_01_humidity
+                - sensor.office_sensor_02_humidity
+              show_air_quality_unit: false
+              show_illuminance_unit: false
+              show_temperature_unit: false
+            power_entities:
+              entities:
+                - sensor.office_ac_unit_electric_consumption_w
+                - sensor.thomas_desk_electric_consumption_w
+              show_unit: true
+            icon_horizontal_position: right
+            icon_vertical_position: top
+            persistent_entities:
+              position: right
+            intermittent_entities:
+              entities:
+                - entity: binary_sensor.office_motion_detected
+                  icon: mdi:motion-sensor
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+            update_entities:
+              entities:
+                - update.office_ac_unit_firmware
+                - update.office_sensor_01_firmware
+                - update.office_sensor_02_firmware
+                - update.thomas_desk_firmware
+              icon: mdi:update
+              tap_action:
+                action: more-info
+              hold_action:
+                action: more-info
+            battery_entities:
+              entities:
+                - sensor.office_sensor_01_battery_level
+                - sensor.office_sensor_02_battery_level
+              tap_action:
+                action: more-info
+              hold_action:
+                action: more-info
+            border_entity: light.office
+            border_width: 1px
+            border_style: solid
+            animate_icon: true
+            icon_animation: none
+          - type: custom:unified-room-card
+            name: Living Room
+            entity: light.living_room
+            show_name: true
+            show_icon: true
+            icon_position: auto
+            tap_action:
+              action: toggle
+            hold_action:
+              action: none
+            double_tap_action:
+              action: more-info
+            grid_area: living_room
+            icon: mdi:sofa
+            climate_entities:
+              temperature_entities:
+                - sensor.living_room_01_air_temperature
+                - sensor.living_room_02_air_temperature
+              show_temperature_unit: false
+              humidity_entities:
+                - sensor.living_room_01_humidity
+                - sensor.living_room_02_humidity
+              show_air_quality_unit: false
+              show_illuminance_unit: false
+            power_entities:
+              entities:
+                - sensor.living_room_outlet_electric_consumption_w
+                - sensor.living_room_power_strip_01_electric_consumption_w
+                - sensor.living_room_power_strip_02_electric_consumption_w_1
+              show_unit: true
+            intermittent_entities:
+              entities:
+                - entity: binary_sensor.living_room_motion_detected
+                  icon: mdi:motion-sensor
+            battery_entities:
+              entities:
+                - sensor.living_room_01_battery_level
+                - sensor.living_room_02_battery_level
+                - sensor.living_room_window_01_battery_level
+                - sensor.living_room_window_02_battery_level
+                - sensor.t6_pro_z_wave_programmable_thermostat_battery_level
+            update_entities:
+              icon: mdi:update
+              entities:
+                - update.living_room_01_firmware
+                - update.living_room_02_firmware
+                - update.living_room_outlet_firmware
+                - update.living_room_power_strip_01_firmware
+                - update.living_room_power_strip_02_firmware
+                - update.living_room_window_01_firmware
+                - update.living_room_window_02_firmware
+            border_entity: light.living_room
+            border_width: 1px
+          - type: custom:unified-room-card
+            name: Mudroom
+            entity: light.mudroom
+            show_name: true
+            show_icon: true
+            icon_horizontal_position: right
+            icon_vertical_position: top
+            tap_action:
+              action: toggle
+            hold_action:
+              action: none
+            double_tap_action:
+              action: more-info
+            icon: mdi:coat-rack
+            grid_area: mudroom
+            climate_entities:
+              temperature_entities:
+                - sensor.mudroom_01_air_temperature
+              show_temperature_unit: false
+              humidity_entities:
+                - sensor.mudroom_01_humidity
+              show_illuminance_unit: false
+              show_air_quality_unit: false
+            power_entities:
+              entities:
+                - sensor.mudroom_outlet_01_electric_consumption_w
+            persistent_entities:
+              position: right
+            intermittent_entities:
+              entities:
+                - entity: binary_sensor.mudroom_01_motion_detection
+                  icon: mdi:motion-sensor
+                  states: []
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+                - entity: binary_sensor.mudroom_pet
+                  icon: mdi:dog-side
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+                - entity: binary_sensor.mudroom_door_window_door_is_open
+                  icon: mdi:door-open
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+            battery_entities:
+              tap_action:
+                action: more-info
+              hold_action:
+                action: more-info
+              entities:
+                - sensor.mudroom_01_battery_level_2
+                - sensor.mudroom_door_battery_level
+            update_entities:
+              tap_action:
+                action: more-info
+              hold_action:
+                action: more-info
+              icon: mdi:update
+              entities:
+                - update.mudroom_firmware
+                - update.mudroom_01_firmware_2
+                - update.mudroom_door_firmware
+                - update.mudroom_outlet_01_firmware
+            border_entity: light.mudroom
+            border_width: 1px
+          - type: custom:unified-room-card
+            name: Server Room
+            entity: light.server_room
+            show_name: true
+            show_icon: true
+            icon_horizontal_position: right
+            icon_vertical_position: top
+            tap_action:
+              action: toggle
+            hold_action:
+              action: none
+            double_tap_action:
+              action: more-info
+            icon: mdi:server
+            grid_area: server
+            climate_entities:
+              temperature_entities:
+                - sensor.server_room_air_temperature
+              show_temperature_unit: false
+              humidity_entities:
+                - sensor.server_room_humidity
+            persistent_entities:
+              position: right
+            intermittent_entities:
+              entities:
+                - entity: binary_sensor.server_room_motion_detection
+                  icon: mdi:motion-sensor
+                - entity: binary_sensor.server_room_motion
+                  icon: mdi:motion-sensor
+                - entity: binary_sensor.server_room_person
+                  icon: mdi:account
+                - entity: binary_sensor.server_room_pet
+                  icon: mdi:dog-side
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+            battery_entities:
+              entities:
+                - sensor.server_room_battery_level
+            update_entities:
+              icon: mdi:update
+              entities:
+                - update.controller_firmware
+                - update.reolink_nvr_firmware
+                - update.server_room_firmware
+                - update.server_room_firmware_2
+            border_entity: light.server_room
+            border_width: 1px
+          - type: custom:unified-room-card
+            name: Back Door
+            entity: light.back_door
+            show_name: true
+            show_icon: true
+            icon_position: auto
+            tap_action:
+              action: toggle
+            hold_action:
+              action: none
+            double_tap_action:
+              action: more-info
+            grid_area: backdoor
+            icon: mdi:door
+            icon_horizontal_position: right
+            icon_vertical_position: top
+            border_entity: lock.front_door_deadbolt_2
+            border_width: 1px
+            border_style: solid
+            persistent_entities:
+              entities:
+                - entity: lock.front_door_deadbolt_2
+                  icon: mdi:shield-lock
+                  icon_size: 30px
+                  states:
+                    - state: locked
+                      icon: mdi:shield-lock
+                    - state: unlocked
+                      icon: mdi:shield-lock-open
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+              position: left
+            grid:
+              template_areas: >-
+                "name name icon icon" "persistent persistent intermittent
+                intermittent"
+            intermittent_entities:
+              entities:
+                - entity: binary_sensor.back_door_window_door_is_open_2
+                  icon: mdi:door-open
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+                - entity: binary_sensor.backdoor_vehicle
+                  icon: mdi:car
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+                - entity: binary_sensor.backdoor_animal
+                  icon: mdi:dog-side
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+                - entity: binary_sensor.backdoor_person
+                  icon: mdi:account
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+                - entity: binary_sensor.backdoor_motion
+                  icon: mdi:motion-sensor
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+            icon_animation: none
+            battery_entities:
+              tap_action:
+                action: more-info
+              hold_action:
+                action: more-info
+              entities:
+                - sensor.back_door_battery_level
+            update_entities:
+              tap_action:
+                action: more-info
+              hold_action:
+                action: more-info
+              entities:
+                - update.back_door_firmware
+                - update.backdoor_firmware
+          - type: custom:unified-room-card
+            name: Front Door
+            entity: light.back_door
+            show_name: true
+            show_icon: true
+            icon_position: auto
+            tap_action:
+              action: toggle
+            hold_action:
+              action: none
+            double_tap_action:
+              action: more-info
+            grid_area: frontdoor
+            icon: mdi:door
+            icon_horizontal_position: right
+            icon_vertical_position: top
+            border_entity: lock.front_door_deadbolt_2
+            border_width: 1px
+            border_style: solid
+            persistent_entities:
+              entities:
+                - entity: lock.front_door_deadbolt_2
+                  icon: mdi:shield-lock
+                  icon_size: 30px
+                  states:
+                    - state: locked
+                      icon: mdi:shield-lock
+                    - state: unlocked
+                      icon: mdi:shield-lock-open
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+              position: left
+            grid:
+              template_areas: >-
+                "name name icon icon" "persistent persistent intermittent 
+                intermittent"
+            intermittent_entities:
+              entities:
+                - entity: binary_sensor.front_door_window_door_is_open
+                  icon: mdi:door-open
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+            battery_entities:
+              tap_action:
+                action: more-info
+              entities:
+                - sensor.front_door_battery_level
+              low_threshold: 25
+              hold_action:
+                action: more-info
+            update_entities:
+              tap_action:
+                action: more-info
+              entities:
+                - update.front_door_firmware
+              spin_animation: true
+              hold_action:
+                action: more-info
+            icon_animation: none
+          - type: custom:unified-room-card
+            name: Main Bathroom
+            entity: light.main_bathroom_lights
+            show_name: false
+            show_icon: true
+            icon_horizontal_position: center
+            icon_vertical_position: center
+            tap_action:
+              action: toggle
+            hold_action:
+              action: none
+            double_tap_action:
+              action: more-info
+            grid_area: main_bathroom
+            icon: mdi:shower-head
+            show_img_cell: false
+            card_height: 75px
+            icon_size: 50px
+            persistent_entities:
+              position: right
+            intermittent_entities:
+              entities:
+                - entity: ''
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+            border_entity: binary_sensor.main_bathroom_motion_detection
+            border_width: 1px
+            border_style: solid
+          - type: custom:unified-room-card
+            name: Guest Bathroom
+            entity: light.guest_bathroom_lights
+            show_name: false
+            show_icon: true
+            icon_horizontal_position: center
+            icon_vertical_position: center
+            tap_action:
+              action: toggle
+            hold_action:
+              action: none
+            double_tap_action:
+              action: more-info
+            grid_area: guest_bathroom
+            show_img_cell: false
+            icon_size: 50px
+            card_height: 75px
+            icon: mdi:bathtub
+            border_entity: binary_sensor.guest_bathroom_motion_sensor_motion_detection
+            border_width: 1px
+            border_style: solid
+            persistent_entities:
+              position: right
+            intermittent_entities: {}
+            battery_entities:
+              tap_action:
+                action: more-info
+              hold_action:
+                action: more-info
+            update_entities:
+              tap_action:
+                action: more-info
+              hold_action:
+                action: more-info
+            icon_animation: none
+          - type: custom:unified-room-card
+            name: Balcony
+            entity: light.balcony
+            show_name: false
+            show_icon: true
+            icon_horizontal_position: center
+            icon_vertical_position: center
+            tap_action:
+              action: toggle
+            hold_action:
+              action: none
+            double_tap_action:
+              action: more-info
+            grid_area: balcony
+            card_height: 75px
+            show_img_cell: false
+            icon: mdi:balcony
+            icon_size: 50px
+            border_entity: binary_sensor.balcony_door_window_door_is_open
+            border_width: 1px
+          - type: custom:unified-room-card
+            name: Garage
+            entity: light.garage
+            show_name: false
+            show_icon: true
+            icon_position: auto
+            tap_action:
+              action: toggle
+            hold_action:
+              action: none
+            double_tap_action:
+              action: more-info
+            grid_area: garage
+            show_img_cell: false
+            icon: mdi:garage
+            card_height: 75px
+            icon_horizontal_position: center
+            icon_vertical_position: center
+            icon_size: 50px
+            border_entity: binary_sensor.garage_door_window_door_is_open
+            border_width: 1px
+          - type: custom:unified-room-card
+            name: Stairs
+            entity: light.stairs
+            show_name: false
+            show_icon: true
+            icon_horizontal_position: center
+            icon_vertical_position: center
+            tap_action:
+              action: toggle
+            hold_action:
+              action: none
+            double_tap_action:
+              action: more-info
+            grid_area: stairs
+            show_img_cell: false
+            card_height: 75px
+            icon: mdi:stairs
+            persistent_entities:
+              position: right
+            border_width: 1px
+            border_style: solid
+            border_entity: binary_sensor.stairs_motion_detected
+            intermittent_entities: {}
+            icon_size: 50px
+            img_cell_size: 50px
+          - type: custom:unified-room-card
+            entity: climate.t6_pro_z_wave_programmable_thermostat
+            show_name: false
+            show_icon: true
+            icon_position: center
+            tap_action:
+              action: more-info
+            hold_action:
+              action: none
+            double_tap_action:
+              action: more-info
+            grid_area: ac
+            name: Air Conditioning
+            icon: mdi:thermostat
+            show_img_cell: false
+            icon_horizontal_position: center
+            icon_vertical_position: center
+            icon_size: 40px
+            card_height: 54px
+            border_entity: climate.t6_pro_z_wave_programmable_thermostat
+            border_width: 1px
+            power_entities:
+              show_unit: false
+            climate_entities:
+              show_temperature_unit: false
+              show_humidity_unit: false
+              show_air_quality_unit: false
+              show_illuminance_unit: false
+            border_style: solid
+            persistent_entities:
+              position: right
+            intermittent_entities: {}
+      - type: vertical-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: pop-up
+            hash: '#main-bedroom'
+            button_type: slider
+            name: Main Bedroom
+            icon: mdi:bed-king
+            bg_color: var(--dark-blue-color)
+            entity: light.main_bedroom
+            show_attribute: false
+            styles: ''
+            card_layout: large-2-rows
+          - type: grid
+            columns: 1
+            square: false
+            cards:
+              - type: custom:bubble-card
+                card_type: separator
+                name: Lights
+                icon: mdi:lightbulb
+                styles: |
+                  .separator-container div:last-child {
+                    opacity: 1!important;
+                  }
+              - square: false
+                type: grid
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: sensor_popup_lights
+                    variables:
+                      var_name: Brooke's Side
+                      var_entity: light.main_bedroom_brooke_side
+                      var_icon: mdi:face-woman-shimmer
+                      var_label: Main Bedroom
+                  - type: custom:button-card
+                    template: sensor_popup_lights
+                    variables:
+                      var_name: Thomas' Side
+                      var_entity: light.main_bedroom_thomas_side
+                      var_icon: mdi:face-man
+                      var_label: Main Bedroom
+          - type: grid
+            columns: 1
+            square: false
+            cards:
+              - type: custom:bubble-card
+                card_type: separator
+                name: Media Controls
+                icon: mdi:apple
+                styles: |
+                  .separator-container div:last-child {
+                    opacity: 1!important;
+                  }
+              - square: false
+                type: grid
+                columns: 1
+                cards:
+                  - type: custom:mini-media-player
+                    entity: media_player.atv_bedroom_2
+                    group: true
+                    volume_stateless: true
+                    sound_mode: full
+                    source: full
+                    artwork: cover
+          - type: grid
+            columns: 1
+            square: false
+            cards:
+              - type: custom:bubble-card
+                card_type: separator
+                name: Power
+                icon: mdi:lightning-bolt
+                styles: |
+                  .separator-container div:last-child {
+                    opacity: 1!important;
+                  }
+              - square: false
+                type: grid
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: sensor_popup_power
+                    variables:
+                      var_name: Media Outlet
+                      var_entity: switch.main_bedroom_brooke_power_strip
+                      var_icon: mdi:television
+                      var_label: Main Bedroom
+                      var_power: >-
+                        sensor.main_bedroom_brooke_power_strip_electric_consumption_w
