@@ -345,6 +345,56 @@ power_entities:
 
 **Supported Units:** W, kW, MW (power), Wh, kWh, MWh (energy), V, mV (voltage), A, mA (current)
 
+### Grid Layout (Advanced)
+
+The card uses CSS Grid for layout. By default, it uses a unified layout:
+
+```
+┌─────────────────────────────────────────────────┐
+│  Name                              [Icon]       │  ← icon area
+├────────────────────┬────────────────────────────┤
+│  72°F  45%         │  [persistent] [intermittent]│  ← climate + status
+│                    │  [battery] [update]        │
+└────────────────────┴────────────────────────────┘
+```
+
+**Default Grid:**
+```yaml
+grid:
+  template_areas: '"icon icon icon icon" "climate climate status status"'
+  template_columns: '1fr 1fr 1fr 1fr'
+  template_rows: '1fr min-content'
+```
+
+**Available Grid Areas:**
+
+| Area | Description |
+|------|-------------|
+| `icon` | Icon and name overlay area |
+| `climate` | Temperature, humidity, air quality, illuminance, power |
+| `status` | Combined: persistent + intermittent + battery + update |
+| `persistent` | Persistent entities only (legacy mode) |
+| `intermittent` | Intermittent entities + battery + update (legacy mode) |
+| `battery` | Battery entities only (advanced) |
+| `update` | Update entities only (advanced) |
+
+**Example: Split persistent and intermittent:**
+```yaml
+grid:
+  template_areas: '"icon icon icon icon" "persistent persistent intermittent intermittent"'
+  template_columns: '1fr 1fr 1fr 1fr'
+  template_rows: '1fr min-content'
+```
+Battery and update icons will automatically flow with the intermittent section.
+
+**Example: Separate all sections:**
+```yaml
+grid:
+  template_areas: '"icon icon" "persistent intermittent" "battery update"'
+  template_columns: '1fr 1fr'
+  template_rows: '1fr auto auto'
+```
+
 ## Visual Editor
 
 The card includes a full visual editor accessible through Home Assistant's UI. All options can be configured without writing YAML.
@@ -353,14 +403,22 @@ The card includes a full visual editor accessible through Home Assistant's UI. A
 
 ## Animations
 
-Three animation types are available for persistent and intermittent entities:
+Five animation types are available for the main icon, persistent, and intermittent entities:
 
 | Animation | Description |
 |-----------|-------------|
+| `none` | No animation (default) |
 | `pulse` | Subtle pulsing opacity effect |
 | `glow` | Glowing shadow effect |
 | `flash` | Attention-grabbing flash |
+| `spin` | Continuous rotation |
 
+**Main icon animation** (active when entity is on):
+```yaml
+icon_animation: pulse  # or glow, flash, spin, none
+```
+
+**Entity-specific animation:**
 ```yaml
 persistent_entities:
   entities:

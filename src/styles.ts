@@ -399,6 +399,34 @@ export const intermittentStyles = css`
 // Battery and Update entities now use the .intermittent-entity class
 // No additional styles needed - they inherit from intermittent styles
 
+// Battery section for custom grid layouts
+export const batterySectionStyles = css`
+  .battery-section {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  .battery-section.legacy-grid {
+    grid-area: battery;
+  }
+`;
+
+// Update section for custom grid layouts
+export const updateSectionStyles = css`
+  .update-section {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  .update-section.legacy-grid {
+    grid-area: update;
+  }
+`;
+
 // =============================================================================
 // UPDATE ANIMATION STYLES
 // =============================================================================
@@ -483,6 +511,8 @@ export const cardStyles = css`
   ${statusStyles}
   ${persistentStyles}
   ${intermittentStyles}
+  ${batterySectionStyles}
+  ${updateSectionStyles}
   ${overflowStyles}
   ${unavailableStyles}
   ${updateAnimationStyles}

@@ -359,8 +359,8 @@ export class UnifiedRoomCard extends LitElement {
       borderStyle: borderStyle,
     });
 
-    // Check if user has custom grid with legacy persistent/intermittent areas
-    const useLegacyGrid = this._usesLegacyGridAreas();
+    // Detect which grid areas are defined in custom grid
+    const gridAreas = this._getDefinedGridAreas();
 
     return html`
       <ha-card
@@ -372,31 +372,95 @@ export class UnifiedRoomCard extends LitElement {
         ${this._renderName()}
         ${this._renderIcon()}
         ${this.hass ? renderClimateSection(this.hass, this._config?.climate_entities, this._config?.power_entities) : nothing}
-        ${useLegacyGrid
-          ? html`
-              ${this._renderPersistentEntities(true)}
-              ${this._renderIntermittentEntities(true)}
-            `
-          : this._renderStatusSection()
-        }
+        ${this._renderEntitySections(gridAreas)}
       </ha-card>
     `;
   }
 
   /**
-   * Check if user is using legacy grid areas (separate persistent/intermittent)
+   * Detect which grid areas are defined in custom grid template
    */
-  private _usesLegacyGridAreas(): boolean {
-    const customAreas = this._config?.grid?.template_areas;
-    if (!customAreas) {
-      return false; // Using default grid with "status" area
-    }
-    // If user specified custom grid with persistent or intermittent, use legacy mode
-    return customAreas.includes('persistent') || customAreas.includes('intermittent');
+  private _getDefinedGridAreas(): {
+    hasCustomGrid: boolean;
+    hasPersistentArea: boolean;
+    hasIntermittentArea: boolean;
+    hasBatteryArea: boolean;
+    hasUpdateArea: boolean;
+  } {
+    const customAreas = this._config?.grid?.template_areas || '';
+    return {
+      hasCustomGrid: customAreas.length > 0,
+      hasPersistentArea: customAreas.includes('persistent'),
+      hasIntermittentArea: customAreas.includes('intermittent'),
+      hasBatteryArea: customAreas.includes('battery'),
+      hasUpdateArea: customAreas.includes('update'),
+    };
   }
 
   /**
-   * Render combined status section (persistent + intermittent)
+   * Render entity sections based on grid configuration
+   * - Default grid: Everything in unified "status" area
+   * - Custom grid with persistent/intermittent: Separate areas, battery/update flow with intermittent
+   * - Custom grid with battery/update areas: Those get their own grid areas
+   */
+  private _renderEntitySections(gridAreas: ReturnType<typeof this._getDefinedGridAreas>): TemplateResult | typeof nothing {
+    const { hasCustomGrid, hasPersistentArea, hasIntermittentArea, hasBatteryArea, hasUpdateArea } = gridAreas;
+    
+    // Check if using any custom grid areas for entities
+    const usesCustomEntityAreas = hasPersistentArea || hasIntermittentArea || hasBatteryArea || hasUpdateArea;
+
+    if (!usesCustomEntityAreas) {
+      // Default mode: unified status section
+      return this._renderStatusSection();
+    }
+
+    // Custom grid mode: render sections based on defined areas
+    // Battery/update flow with intermittent unless they have their own areas
+    const includeBatteryWithIntermittent = !hasBatteryArea;
+    const includeUpdateWithIntermittent = !hasUpdateArea;
+
+    return html`
+      ${hasPersistentArea ? this._renderPersistentEntities(true) : nothing}
+      ${hasIntermittentArea ? this._renderIntermittentEntities(true, includeBatteryWithIntermittent, includeUpdateWithIntermittent) : nothing}
+      ${hasBatteryArea ? this._renderBatterySection() : nothing}
+      ${hasUpdateArea ? this._renderUpdateSection() : nothing}
+    `;
+  }
+
+  /**
+   * Render battery entities in their own grid area (advanced users)
+   */
+  private _renderBatterySection(): TemplateResult | typeof nothing {
+    if (!this.hass || !this._config?.battery_entities) return nothing;
+    
+    const lowBatteryCount = getLowBatteryCount(this.hass, this._config.battery_entities);
+    if (lowBatteryCount === 0) return nothing;
+
+    return html`
+      <div class="battery-section legacy-grid">
+        ${renderBatteryEntities(this.hass, this._config.battery_entities, this._handleEntityAction.bind(this))}
+      </div>
+    `;
+  }
+
+  /**
+   * Render update entities in their own grid area (advanced users)
+   */
+  private _renderUpdateSection(): TemplateResult | typeof nothing {
+    if (!this.hass || !this._config?.update_entities) return nothing;
+    
+    const pendingUpdateCount = getPendingUpdateCount(this.hass, this._config.update_entities);
+    if (pendingUpdateCount === 0) return nothing;
+
+    return html`
+      <div class="update-section legacy-grid">
+        ${renderUpdateEntities(this.hass, this._config.update_entities, this._handleEntityAction.bind(this), this._updateAnimationState)}
+      </div>
+    `;
+  }
+
+  /**
+   * Render combined status section (persistent + intermittent + battery + update)
    * Used with default grid layout
    */
   private _renderStatusSection(): TemplateResult | typeof nothing {
@@ -416,7 +480,7 @@ export class UnifiedRoomCard extends LitElement {
     return html`
       <div class="status-section">
         ${this._renderPersistentEntities(false)}
-        ${this._renderIntermittentEntities(false)}
+        ${this._renderIntermittentEntities(false, false, false)}
         ${hasBattery && this.hass ? renderBatteryEntities(this.hass, this._config?.battery_entities, this._handleEntityAction.bind(this)) : nothing}
         ${hasUpdate && this.hass ? renderUpdateEntities(this.hass, this._config?.update_entities, this._handleEntityAction.bind(this), this._updateAnimationState) : nothing}
       </div>
@@ -1123,25 +1187,33 @@ export class UnifiedRoomCard extends LitElement {
    * Render intermittent entities section
    * Only shows entities when they are in an "active" state
    * @param legacyGrid - If true, uses grid-area: intermittent for custom grid layouts
+   * @param includeBattery - If true, includes battery entities in this section
+   * @param includeUpdate - If true, includes update entities in this section
    */
-  private _renderIntermittentEntities(legacyGrid: boolean = false): TemplateResult | typeof nothing {
-    if (!this._config?.intermittent_entities?.entities?.length || !this.hass) {
-      return nothing;
-    }
-
-    const config = this._config.intermittent_entities;
-    const defaultIconSize = config.icon_size || '21px';
-    const gap = config.gap || '4px';
-    const sectionActiveStates = config.active_states;
-    const sectionAnimation = config.animation;
+  private _renderIntermittentEntities(
+    legacyGrid: boolean = false,
+    includeBattery: boolean = false,
+    includeUpdate: boolean = false
+  ): TemplateResult | typeof nothing {
+    const config = this._config?.intermittent_entities;
+    const defaultIconSize = config?.icon_size || '21px';
+    const gap = config?.gap || '4px';
+    const sectionActiveStates = config?.active_states;
+    const sectionAnimation = config?.animation;
 
     // Filter to only active entities
-    const activeEntities = (config.entities || []).filter(entityConfig => 
+    const activeEntities = (config?.entities || []).filter(entityConfig => 
       this._isIntermittentEntityActive(entityConfig, sectionActiveStates)
     );
 
-    // Don't render section if no active entities
-    if (activeEntities.length === 0) {
+    // Check if battery/update have content
+    const hasBatteryContent = includeBattery && this.hass && this._config?.battery_entities && 
+      getLowBatteryCount(this.hass, this._config.battery_entities) > 0;
+    const hasUpdateContent = includeUpdate && this.hass && this._config?.update_entities &&
+      getPendingUpdateCount(this.hass, this._config.update_entities) > 0;
+
+    // Don't render section if no content at all
+    if (activeEntities.length === 0 && !hasBatteryContent && !hasUpdateContent) {
       return nothing;
     }
 
@@ -1159,6 +1231,8 @@ export class UnifiedRoomCard extends LitElement {
         ${activeEntities.map((entityConfig) => 
           this._renderIntermittentEntity(entityConfig, defaultIconSize, sectionAnimation)
         )}
+        ${hasBatteryContent ? renderBatteryEntities(this.hass!, this._config!.battery_entities, this._handleEntityAction.bind(this)) : nothing}
+        ${hasUpdateContent ? renderUpdateEntities(this.hass!, this._config!.update_entities, this._handleEntityAction.bind(this), this._updateAnimationState) : nothing}
       </div>
     `;
   }
