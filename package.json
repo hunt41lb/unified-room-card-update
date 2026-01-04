@@ -1,6 +1,6 @@
 {
   "name": "unified-room-card-refactor",
-  "version": "1.0.24",
+  "version": "1.0.25",
   "description": "A comprehensive room status card for Home Assistant (Refactor Branch)",
   "main": "dist/unified-room-card-refactor.js",
   "module": "dist/unified-room-card-refactor.js",

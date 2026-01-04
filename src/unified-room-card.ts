@@ -531,12 +531,21 @@ export class UnifiedRoomCard extends LitElement {
     const icon = this._config?.icon || this._getDefaultIcon(mainEntity);
     const domain = mainEntity ? this._getDomain(mainEntity.entity_id) : '';
 
-    const iconContainerClasses = {
+    // Get animation class (only when active and animation is configured)
+    const animationClass = isActive && this._config?.icon_animation && this._config.icon_animation !== 'none'
+      ? getAnimationClass(this._config.icon_animation)
+      : '';
+
+    const iconContainerClasses: Record<string, boolean> = {
       'icon-container': true,
       'with-img-cell': showImgCell,
-      active: isActive,
-      [getAnimationClass(isActive && this._config?.icon_animation !== 'none' ? this._config?.icon_animation : undefined)]: true,
+      'active': isActive,
     };
+    
+    // Only add animation class if it's not empty
+    if (animationClass) {
+      iconContainerClasses[animationClass] = true;
+    }
 
     // Build icon container styles
     const iconContainerStyles: Record<string, string> = {};
