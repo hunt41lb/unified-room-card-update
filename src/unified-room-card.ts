@@ -613,6 +613,12 @@ export class UnifiedRoomCard extends LitElement {
 
     // Build icon container styles
     const iconContainerStyles: Record<string, string> = {};
+
+    // Apply spin duration if spin animation is enabled
+    if (this._config?.icon_animation === 'spin' && isActive) {
+      const spinDuration = this._config?.spin_duration || 2;
+      iconContainerStyles['--spin-duration'] = `${spinDuration}s`;
+    }
     
     // Apply custom img_cell size if specified
     if (showImgCell && this._config?.img_cell_size) {

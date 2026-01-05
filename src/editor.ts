@@ -319,6 +319,21 @@ export class UnifiedRoomCardEditor extends LitElement {
                 </ha-select>
               </div>
             </div>
+            <!-- Spin Duration (only show when spin is selected) -->
+            ${this._config?.icon_animation === 'spin' ? html`
+              <div class="form-row">
+                <span class="form-label">Spin Duration (sec)</span>
+                <div class="form-input">
+                  <ha-selector
+                    .hass=${this.hass}
+                    .selector=${{ number: { min: 1, max: 120, step: 1, mode: 'box' } }}
+                    .value=${this._config?.spin_duration ?? 2}
+                    @value-changed=${(e: CustomEvent) => this._valueChanged('spin_duration', e.detail.value)}
+                  ></ha-selector>
+                </div>
+              </div>
+              <p class="helper-text">Time for one complete 360° rotation (useful for timer visualization)</p>
+            ` : ''}
           ` : ''}
         </div>
       </div>

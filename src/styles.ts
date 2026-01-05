@@ -137,7 +137,7 @@ export const animationClasses = css`
   }
 
   .animation-spin {
-    animation: spin 2s linear infinite;
+    animation: spin var(--spin-duration, 2s) linear infinite;
   }
 `;
 

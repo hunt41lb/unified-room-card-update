@@ -418,6 +418,20 @@ Five animation types are available for the main icon, persistent, and intermitte
 icon_animation: pulse  # or glow, flash, spin, none
 ```
 
+**Spin animation with custom duration:**
+
+Use `spin_duration` to control how long each 360° rotation takes. This is useful as a visual timer - for example, if an automation turns lights on for 60 seconds, set the spin duration to 60 and the icon will complete exactly one rotation during that time.
+
+```yaml
+icon_animation: spin
+spin_duration: 60  # Seconds for one complete rotation (default: 2)
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `icon_animation` | string | `none` | Animation type: none, pulse, glow, flash, spin |
+| `spin_duration` | number | `2` | Duration of one 360° rotation in seconds (1-120) |
+
 **Entity-specific animation:**
 ```yaml
 persistent_entities:

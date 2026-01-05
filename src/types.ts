@@ -208,6 +208,7 @@ export interface UnifiedRoomCardConfig {
   show_state?: boolean;
   show_img_cell?: boolean;
   icon_animation?: string;  // Animation type: none, pulse, glow, flash, spin
+  spin_duration?: number;   // Duration of full 360° spin in seconds (default: 2)
   
   // Main Icon
   icon?: string;
