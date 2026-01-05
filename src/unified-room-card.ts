@@ -32,10 +32,12 @@ import {
 
 import type {
   HomeAssistant,
+  HassEntity,
   UnifiedRoomCardConfig,
   TapActionConfig,
   ClimateEntitiesConfig,
   PowerEntitiesConfig,
+  GlowEffectConfig,
 } from './types';
 
 import {
@@ -317,6 +319,13 @@ export class UnifiedRoomCard extends LitElement {
       entitiesToCheck.push(...this._config.update_entities.entities);
     }
 
+    // Glow effect entities
+    if (this._config.glow_effects?.length) {
+      entitiesToCheck.push(
+        ...this._config.glow_effects.map((g) => g.entity).filter(Boolean)
+      );
+    }
+
     // Check if any of these entities have changed
     for (const entityId of entitiesToCheck) {
       const oldState = oldHass.states[entityId];
@@ -345,13 +354,11 @@ export class UnifiedRoomCard extends LitElement {
     // Check if ANY entity in the group is active
     const isActive = this._isGroupActive();
 
-    const cardClasses = {
-      'state-on': isActive,
-      'state-off': !isActive && !!mainEntity,
-    };
-
     // Calculate border color from border_entity
     const borderStyle = this._getBorderStyle();
+
+    // Get active glow effect (first matching)
+    const activeGlow = this._getActiveGlowEffect();
 
     const cardDynamicStyles = getCardDynamicStyles({
       cardHeight: this._config.card_height,
@@ -363,7 +370,28 @@ export class UnifiedRoomCard extends LitElement {
       activeBackgroundColor: isActive ? this._config.active_background_color : undefined,
       backgroundGradient: this._config.background_gradient,
       borderStyle: borderStyle,
+      // Glow effect
+      glowColor: activeGlow?.color,
+      glowSpread: activeGlow?.spread,
+      glowAnimation: activeGlow?.animation,
     });
+
+    // Build card classes including glow
+    const cardClasses: Record<string, boolean> = {
+      'state-on': isActive,
+      'state-off': !isActive && !!mainEntity,
+    };
+    
+    // Add glow classes if active
+    if (activeGlow) {
+      if (activeGlow.animation === 'pulse') {
+        cardClasses['card-glow-pulse'] = true;
+      } else if (activeGlow.animation === 'breathe') {
+        cardClasses['card-glow-breathe'] = true;
+      } else {
+        cardClasses['card-glow'] = true;
+      }
+    }
 
     // Detect which grid areas are defined in custom grid
     const gridAreas = this._getDefinedGridAreas();
@@ -585,6 +613,127 @@ export class UnifiedRoomCard extends LitElement {
     }
 
     return undefined;
+  }
+
+  /**
+   * Get the first active glow effect based on entity states
+   * Returns the first matching glow effect configuration with resolved color, or undefined if none match
+   */
+  private _getActiveGlowEffect(): { color: string; spread: number; animation: string } | undefined {
+    if (!this._config?.glow_effects?.length || !this.hass) {
+      return undefined;
+    }
+
+    // Find first matching glow effect
+    for (const glowEffect of this._config.glow_effects) {
+      if (!glowEffect.entity) {
+        continue;
+      }
+
+      const entity = this.hass.states[glowEffect.entity];
+      if (!entity) {
+        continue;
+      }
+
+      // Get trigger states (support both state and states)
+      const triggerStates: string[] = [];
+      if (glowEffect.state) {
+        triggerStates.push(glowEffect.state);
+      }
+      if (glowEffect.states?.length) {
+        triggerStates.push(...glowEffect.states);
+      }
+
+      // If no states specified, skip this effect
+      if (triggerStates.length === 0) {
+        continue;
+      }
+
+      // Check if entity is in one of the trigger states
+      if (triggerStates.includes(entity.state)) {
+        // Resolve color (auto or specified)
+        const resolvedColor = this._resolveGlowColor(glowEffect.color, entity);
+        
+        return {
+          color: resolvedColor,
+          spread: glowEffect.spread ?? 4,
+          animation: glowEffect.animation || 'none',
+        };
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Resolve glow color - handles 'auto' and explicit colors
+   */
+  private _resolveGlowColor(color: string | undefined, entity: HassEntity): string {
+    // Default to auto if not specified
+    const colorValue = color || 'auto';
+    
+    if (colorValue === 'auto') {
+      return this._getEntityGlowColor(entity);
+    }
+    
+    return colorValue;
+  }
+
+  /**
+   * Get glow color from entity based on domain and state
+   */
+  private _getEntityGlowColor(entity: HassEntity): string {
+    const domain = entity.entity_id.split('.')[0];
+    
+    // Light entities - use rgb_color if available
+    if (domain === 'light' && entity.state === 'on') {
+      const rgbColor = entity.attributes.rgb_color as [number, number, number] | undefined;
+      if (rgbColor) {
+        return `rgb(${rgbColor[0]}, ${rgbColor[1]}, ${rgbColor[2]})`;
+      }
+      // Fallback for lights without color
+      return 'var(--state-light-active-color, var(--amber-color, #ffc107))';
+    }
+
+    // Climate entities
+    if (domain === 'climate') {
+      const hvacAction = entity.attributes.hvac_action as string | undefined;
+      switch (hvacAction) {
+        case 'heating':
+        case 'preheating':
+          return 'var(--state-climate-heat-color, #ff8c00)';
+        case 'cooling':
+          return 'var(--state-climate-cool-color, #2196f3)';
+        case 'drying':
+          return 'var(--state-climate-dry-color, #8bc34a)';
+        case 'fan':
+          return 'var(--state-climate-fan_only-color, #00bcd4)';
+        default:
+          return 'var(--primary-color)';
+      }
+    }
+
+    // Lock entities
+    if (domain === 'lock') {
+      switch (entity.state) {
+        case 'locked':
+          return 'var(--state-lock-locked-color, #43a047)';
+        case 'unlocked':
+          return 'var(--state-lock-unlocked-color, #ffa600)';
+        case 'jammed':
+          return 'var(--state-lock-jammed-color, #db4437)';
+        default:
+          return 'var(--primary-color)';
+      }
+    }
+
+    // Binary sensors / problem states
+    if (entity.state === 'problem' || entity.state === 'error' || entity.state === 'jammed') {
+      return 'var(--error-color, #db4437)';
+    }
+
+    // Default - use primary color
+    return 'var(--primary-color)';
   }
 
   // ===========================================================================

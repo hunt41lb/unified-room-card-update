@@ -51,6 +51,25 @@ export const animationKeyframes = css`
       opacity: 0.3;
     }
   }
+
+  /* Card glow animations - for box-shadow effects */
+  @keyframes glow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 var(--glow-spread, 8px) var(--glow-intensity, 4px) var(--glow-color, #ffc107);
+    }
+    50% {
+      box-shadow: 0 0 calc(var(--glow-spread, 8px) * 1.5) calc(var(--glow-intensity, 4px) * 1.5) var(--glow-color, #ffc107);
+    }
+  }
+
+  @keyframes glow-breathe {
+    0%, 100% {
+      box-shadow: 0 0 var(--glow-spread, 8px) var(--glow-intensity, 4px) var(--glow-color, #ffc107);
+    }
+    50% {
+      box-shadow: 0 0 var(--glow-spread, 8px) var(--glow-intensity, 4px) transparent;
+    }
+  }
 `;
 
 /**

@@ -181,6 +181,21 @@ export interface UpdateEntitiesConfig {
 }
 
 // =============================================================================
+// GLOW EFFECT CONFIGURATION
+// =============================================================================
+
+export type GlowAnimationType = 'none' | 'pulse' | 'breathe';
+
+export interface GlowEffectConfig {
+  entity: string;                    // Entity to monitor for glow trigger
+  state?: string;                    // Single state that triggers this glow effect
+  states?: string[];                 // Multiple states that trigger this glow effect
+  color?: string;                    // Glow color - CSS variable, color value, or 'auto' (default: auto)
+  spread?: number;                   // Box-shadow blur/spread in px (default: 4)
+  animation?: GlowAnimationType;     // Glow animation type (default: none)
+}
+
+// =============================================================================
 // GRID LAYOUT CONFIGURATION
 // =============================================================================
 
@@ -252,6 +267,9 @@ export interface UnifiedRoomCardConfig {
   background_color?: string;
   active_background_color?: string;
   background_gradient?: string;
+  
+  // Glow Effects
+  glow_effects?: GlowEffectConfig[];
 }
 
 // =============================================================================

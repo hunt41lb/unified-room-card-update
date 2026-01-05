@@ -344,6 +344,47 @@ border_width: 2px
 border_style: solid
 ```
 
+### Glow Effects
+
+Add dynamic glow effects triggered by entity states. Multiple effects can be configured, and the first matching effect wins (priority-based).
+
+```yaml
+glow_effects:
+  # High priority - error states (checked first)
+  - entity: lock.front_door
+    state: jammed
+    color: var(--error-color, #db4437)
+    animation: pulse
+    spread: 6
+    
+  # Lower priority - unlocked warning
+  - entity: lock.front_door
+    states:
+      - unlocked
+      - unlocking
+    color: var(--warning-color, #ffa600)
+    
+  # Light glow using entity's actual color
+  - entity: light.living_room
+    state: on
+    color: auto  # Uses light's rgb_color
+    animation: breathe
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `entity` | string | **Required** | Entity to monitor |
+| `state` | string | - | Single state that triggers glow |
+| `states` | array | - | Multiple states that trigger glow |
+| `color` | string | `auto` | Glow color - "auto", CSS color, or variable |
+| `spread` | number | `4` | Glow blur/spread radius in pixels |
+| `animation` | string | `none` | Animation: `none`, `pulse`, `breathe` |
+
+**Color Options:**
+- `auto` - Derives color from entity (e.g., light's rgb_color, climate hvac_action)
+- CSS color: `#ff0000`, `rgb(255, 0, 0)`
+- CSS variable: `var(--error-color)`, `var(--state-lock-jammed-color, #db4437)`
+
 ### Power Entities
 
 Display power, energy, voltage, or current measurements. Multiple sensors are summed (for power) or can be used for other electrical measurements.
