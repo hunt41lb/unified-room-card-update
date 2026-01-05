@@ -224,30 +224,18 @@ export const iconStyles = css`
   }
 
   .icon-container.with-img-cell {
-    position: relative;
     width: ${unsafeCSS(DEFAULT_IMG_CELL_WIDTH)};
     height: ${unsafeCSS(DEFAULT_IMG_CELL_HEIGHT)};
     border-radius: 100%;
-    background: var(--secondary-background-color);
+    /* Layered background: entity color on top, solid base underneath */
+    /* --icon-bg-color is set via inline style when active */
+    background: 
+      var(--icon-bg-color, var(--secondary-background-color)),
+      var(--primary-background-color, #fff);
     transition: background 0.3s ease;
-    /* Isolate stacking context for z-index to work properly */
-    isolation: isolate;
   }
 
-  /* Base layer for proper opacity blending - prevents card background from showing through */
-  .icon-container.with-img-cell::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 100%;
-    background: var(--primary-background-color, var(--card-background-color, #fff));
-    z-index: -1;
-  }
-
-  /* Active state background is applied dynamically via inline style for light color support */
+  /* Active state background is applied dynamically via --icon-bg-color CSS variable */
 
   .icon-container ha-icon {
     --mdc-icon-size: ${unsafeCSS(DEFAULT_ICON_WIDTH)};

@@ -655,11 +655,10 @@ export class UnifiedRoomCard extends LitElement {
     }
     
     // Apply dynamic background color for active state with img_cell
-    // Use averaged color for light groups
+    // Set as CSS variable so it layers properly over the base color
     if (isActive && showImgCell) {
       const bgColor = this._getGroupBackgroundColor();
-      iconContainerStyles['background-color'] = bgColor;
-      iconContainerStyles['background'] = bgColor;
+      iconContainerStyles['--icon-bg-color'] = bgColor;
     }
 
     // Icon styles
