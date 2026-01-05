@@ -171,10 +171,19 @@ export class UnifiedRoomCardEditor extends LitElement {
                 .hass=${this.hass}
                 .selector=${{ entity: {} }}
                 .value=${this._config?.entity || ''}
-                @value-changed=${(e: CustomEvent) => this._valueChanged('entity', e.detail.value)}
+                @value-changed=${(e: CustomEvent) => this._handlePrimaryEntityChange(e.detail.value)}
               ></ha-selector>
             </div>
           </div>
+          <!-- Additional Entities (shown only if primary entity is set) -->
+          ${this._config?.entity ? html`
+            <div class="form-row">
+              <span class="form-label">Additional Entities</span>
+              <div class="form-input full-width">
+                ${this._renderAdditionalEntities()}
+              </div>
+            </div>
+          ` : ''}
           <!-- Show State -->
           <div class="form-row">
             <span class="form-label">Show State</span>
@@ -1743,6 +1752,142 @@ export class UnifiedRoomCardEditor extends LitElement {
     }
 
     this._config = newConfig;
+    this._dispatchConfigChanged();
+  }
+
+  /**
+   * Handle primary entity change
+   * When changed, clear additional entities if domain changes
+   */
+  private _handlePrimaryEntityChange(value: string): void {
+    if (!this._config) return;
+
+    const oldDomain = this._config.entity ? this._config.entity.split('.')[0] : '';
+    const newDomain = value ? value.split('.')[0] : '';
+
+    // If domain changed, clear additional entities
+    if (oldDomain !== newDomain && this._config.entities?.length) {
+      this._config = {
+        ...this._config,
+        entity: value || undefined,
+        entities: undefined,
+      };
+    } else {
+      this._config = {
+        ...this._config,
+        entity: value || undefined,
+      };
+    }
+
+    // Remove empty entity
+    if (!value) {
+      delete (this._config as Record<string, unknown>).entity;
+      delete (this._config as Record<string, unknown>).entities;
+    }
+
+    this._dispatchConfigChanged();
+  }
+
+  /**
+   * Get domain from primary entity for filtering
+   */
+  private _getPrimaryDomain(): string | undefined {
+    if (!this._config?.entity) return undefined;
+    return this._config.entity.split('.')[0];
+  }
+
+  /**
+   * Render additional entities selector
+   */
+  private _renderAdditionalEntities(): TemplateResult {
+    const domain = this._getPrimaryDomain();
+    const entities = this._config?.entities || [];
+
+    return html`
+      <div class="additional-entities">
+        ${entities.map((entityId, index) => html`
+          <div class="additional-entity-row">
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{ entity: domain ? { domain: domain } : {} }}
+              .value=${entityId}
+              @value-changed=${(e: CustomEvent) => this._updateAdditionalEntity(index, e.detail.value)}
+            ></ha-selector>
+            <ha-icon-button
+              .path=${'M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z'}
+              @click=${() => this._removeAdditionalEntity(index)}
+              title="Remove entity"
+            ></ha-icon-button>
+          </div>
+        `)}
+        <button 
+          class="add-entity-button"
+          @click=${this._addAdditionalEntity}
+        >
+          <ha-icon .icon=${'mdi:plus'}></ha-icon>
+          Add Entity
+        </button>
+        ${domain ? html`
+          <p class="helper-text" style="margin-top: 8px; padding-left: 0;">
+            Additional entities must be ${domain} domain. All entities toggle together.
+          </p>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  /**
+   * Add a new additional entity slot
+   */
+  private _addAdditionalEntity(): void {
+    if (!this._config) return;
+
+    const entities = [...(this._config.entities || []), ''];
+    this._config = {
+      ...this._config,
+      entities,
+    };
+    this._dispatchConfigChanged();
+  }
+
+  /**
+   * Update an additional entity
+   */
+  private _updateAdditionalEntity(index: number, value: string): void {
+    if (!this._config) return;
+
+    const entities = [...(this._config.entities || [])];
+    
+    if (value) {
+      entities[index] = value;
+    } else {
+      // Remove empty entries
+      entities.splice(index, 1);
+    }
+
+    // Clean up empty array
+    const cleanedEntities = entities.filter(e => e);
+
+    this._config = {
+      ...this._config,
+      entities: cleanedEntities.length > 0 ? cleanedEntities : undefined,
+    };
+    this._dispatchConfigChanged();
+  }
+
+  /**
+   * Remove an additional entity
+   */
+  private _removeAdditionalEntity(index: number): void {
+    if (!this._config) return;
+
+    const entities = [...(this._config.entities || [])];
+    entities.splice(index, 1);
+
+    this._config = {
+      ...this._config,
+      entities: entities.length > 0 ? entities : undefined,
+    };
     this._dispatchConfigChanged();
   }
 

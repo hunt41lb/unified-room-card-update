@@ -687,6 +687,10 @@ export const editorStyles = css`
     flex: 1;
   }
 
+  .form-input.full-width {
+    flex: 1 1 100%;
+  }
+
   /* Inline form row - text field with toggle on same row */
   .form-row-inline {
     display: flex;
@@ -760,6 +764,59 @@ export const editorStyles = css`
 
   .entity-config.expanded {
     display: block;
+  }
+
+  /* Additional entities section */
+  .additional-entities {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .additional-entity-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .additional-entity-row ha-selector {
+    flex: 1;
+  }
+
+  .additional-entity-row ha-icon-button {
+    --mdc-icon-button-size: 32px;
+    --mdc-icon-size: 18px;
+    color: var(--secondary-text-color);
+  }
+
+  .additional-entity-row ha-icon-button:hover {
+    color: var(--error-color, #db4437);
+  }
+
+  .add-entity-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    margin-top: 4px;
+    border: 1px dashed var(--divider-color);
+    border-radius: 8px;
+    background: transparent;
+    cursor: pointer;
+    color: var(--secondary-text-color);
+    font-size: 13px;
+    transition: all 0.2s ease;
+  }
+
+  .add-entity-button:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+  }
+
+  .add-entity-button ha-icon {
+    --mdc-icon-size: 18px;
   }
 
   .add-entity-btn {

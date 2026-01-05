@@ -105,7 +105,8 @@ update_entities:
 |--------|------|---------|-------------|
 | `type` | string | **Required** | `custom:unified-room-card-refactor` |
 | `name` | string | - | Card name displayed in the header |
-| `entity` | string | - | Main entity for card state and actions |
+| `entity` | string | - | Primary entity for card state and actions |
+| `entities` | string[] | - | Additional entities (same domain, grouped control) |
 | `icon` | string | auto | Main icon (auto-detected from entity if not specified) |
 | `show_name` | boolean | `true` | Show/hide card name |
 | `show_icon` | boolean | `true` | Show/hide main icon |
@@ -113,6 +114,26 @@ update_entities:
 | `animate_icon` | boolean | `false` | Animate icon when entity is active |
 | `card_height` | string | `97px` | Card height |
 | `card_width` | string | `auto` | Card width |
+
+### Multiple Entities (Grouped Control)
+
+You can group multiple entities of the same domain together. When grouped:
+- Card shows as "active" if **any** entity in the group is active
+- Toggle action toggles **all** entities in the group at once
+- Light groups display an averaged color
+
+```yaml
+type: custom:unified-room-card-refactor
+name: Kitchen Lights
+entity: light.kitchen_main
+entities:
+  - light.kitchen_island
+  - light.kitchen_under_cabinet
+tap_action:
+  action: toggle  # Toggles all 3 lights at once
+```
+
+**Note:** All entities in the group must be the same domain as the primary entity.
 
 ### Tap Actions
 

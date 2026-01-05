@@ -199,8 +199,9 @@ export interface UnifiedRoomCardConfig {
   type: string;
   name?: string;
   
-  // Main Entity
-  entity?: string;
+  // Main Entity (single or multiple)
+  entity?: string;              // Primary entity (backwards compatible)
+  entities?: string[];          // Additional entities (same domain, grouped control)
   
   // Display Options
   show_name?: boolean;
