@@ -20,3 +20,21 @@ export {
   getAnimationClass,
   type AnimationName 
 } from './animations';
+export {
+  executeAction,
+  fireMoreInfo,
+  toggleEntity,
+  navigate,
+  openUrl,
+  performAction,
+  fireAssist,
+  getDefaultTapAction,
+  getDefaultHoldAction,
+  getDefaultDoubleTapAction,
+  type ActionHandler
+} from './actions';
+export {
+  renderPersistentEntities,
+  getDefaultIcon as getPersistentDefaultIcon,
+  getEntityColor as getPersistentEntityColor
+} from './persistent-entities';

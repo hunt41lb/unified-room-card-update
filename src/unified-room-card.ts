@@ -56,7 +56,10 @@ import {
   getPendingUpdateCount,
   getSpinInterval,
   isSpinAnimationEnabled,
-  type UpdateAnimationState
+  renderPersistentEntities,
+  executeAction,
+  type UpdateAnimationState,
+  type ActionHandler
 } from './components';
 
 // =============================================================================
@@ -420,7 +423,7 @@ export class UnifiedRoomCard extends LitElement {
     const includeUpdateWithIntermittent = !hasUpdateArea;
 
     return html`
-      ${hasPersistentArea ? this._renderPersistentEntities(true) : nothing}
+      ${hasPersistentArea && this.hass ? renderPersistentEntities(this.hass, this._config?.persistent_entities, this, true, this._handleEntityAction.bind(this)) : nothing}
       ${hasIntermittentArea ? this._renderIntermittentEntities(true, includeBatteryWithIntermittent, includeUpdateWithIntermittent) : nothing}
       ${hasBatteryArea ? this._renderBatterySection() : nothing}
       ${hasUpdateArea ? this._renderUpdateSection() : nothing}
@@ -479,7 +482,7 @@ export class UnifiedRoomCard extends LitElement {
 
     return html`
       <div class="status-section">
-        ${this._renderPersistentEntities(false)}
+        ${this.hass ? renderPersistentEntities(this.hass, this._config?.persistent_entities, this, false, this._handleEntityAction.bind(this)) : nothing}
         ${this._renderIntermittentEntities(false, false, false)}
         ${hasBattery && this.hass ? renderBatteryEntities(this.hass, this._config?.battery_entities, this._handleEntityAction.bind(this)) : nothing}
         ${hasUpdate && this.hass ? renderUpdateEntities(this.hass, this._config?.update_entities, this._handleEntityAction.bind(this), this._updateAnimationState) : nothing}
@@ -876,306 +879,6 @@ export class UnifiedRoomCard extends LitElement {
     return ['unavailable', 'unknown'].includes(entity.state);
   }
 
-  /**
-   * Render persistent entities section
-   * These entities are always visible regardless of state
-   * @param legacyGrid - If true, uses grid-area: persistent for custom grid layouts
-   */
-  private _renderPersistentEntities(legacyGrid: boolean = false): TemplateResult | typeof nothing {
-    if (!this._config?.persistent_entities?.entities?.length || !this.hass) {
-      return nothing;
-    }
-
-    const config = this._config.persistent_entities;
-    const position = config.position || 'right';
-    const defaultIconSize = config.icon_size || '21px';
-    const gap = config.gap || '4px';
-
-    // Build section styles
-    const sectionStyles: Record<string, string> = {
-      'gap': gap,
-    };
-
-    // Only apply positioning styles in legacy grid mode or when position is explicitly set
-    if (legacyGrid) {
-      // Handle custom padding or use smart defaults based on position
-      if (config.padding) {
-        sectionStyles['padding'] = config.padding;
-      } else {
-        switch (position) {
-          case 'left':
-            sectionStyles['padding'] = '0 0 1px 14px';
-            break;
-          case 'center':
-            sectionStyles['padding'] = '0 0 1px 0';
-            break;
-          case 'right':
-          default:
-            sectionStyles['padding'] = '0 0 1px 2px';
-            if (!config.margin) {
-              sectionStyles['margin'] = '0 3px 0 0';
-            }
-            break;
-        }
-      }
-
-      // Handle custom margin
-      if (config.margin) {
-        sectionStyles['margin'] = config.margin;
-      }
-
-      switch (position) {
-        case 'left':
-          sectionStyles['justify-self'] = 'start';
-          break;
-        case 'center':
-          sectionStyles['justify-self'] = 'center';
-          break;
-        case 'right':
-        default:
-          sectionStyles['justify-self'] = 'end';
-          break;
-      }
-    }
-
-    const entities = config.entities || [];
-    const classes = {
-      'persistent-section': true,
-      'legacy-grid': legacyGrid,
-    };
-
-    return html`
-      <div class=${classMap(classes)} style=${styleMap(sectionStyles)}>
-        ${entities.map((entityConfig) => 
-          this._renderPersistentEntity(entityConfig, defaultIconSize)
-        )}
-      </div>
-    `;
-  }
-
-  /**
-   * Render a single persistent entity
-   */
-  private _renderPersistentEntity(
-    entityConfig: { 
-      entity: string; 
-      icon?: string; 
-      icon_size?: string; 
-      states?: Array<{ state: string; icon?: string; color?: string; animation?: string }>;
-      tap_action?: TapActionConfig;
-      hold_action?: TapActionConfig;
-      double_tap_action?: TapActionConfig;
-    },
-    defaultIconSize: string
-  ): TemplateResult {
-    const entity = this.hass?.states[entityConfig.entity];
-    const isUnavailable = !entity || this._isUnavailable(entity);
-    const state = entity?.state || 'unavailable';
-    const domain = entityConfig.entity.split('.')[0];
-
-    // Find state-specific config
-    const stateConfig = entityConfig.states?.find(s => s.state === state);
-
-    // Determine icon (priority: state config > entity config > entity attribute > domain default)
-    let icon = stateConfig?.icon || entityConfig.icon;
-    if (!icon && entity?.attributes.icon) {
-      icon = entity.attributes.icon as string;
-    }
-    if (!icon) {
-      icon = this._getPersistentEntityDefaultIcon(domain, state);
-    }
-
-    // Determine color (priority: state config > domain state colors > default)
-    let color = stateConfig?.color;
-    if (!color) {
-      color = this._getPersistentEntityColor(domain, state, isUnavailable);
-    }
-
-    // Icon size (entity-specific or default)
-    const iconSize = entityConfig.icon_size || defaultIconSize;
-
-    // Icon styles
-    const iconStyles: Record<string, string> = {
-      'width': iconSize,
-      'height': iconSize,
-      'color': color,
-      '--mdc-icon-size': iconSize,
-    };
-
-    // Handle tap action
-    const handleTap = (e: Event) => {
-      e.stopPropagation();
-      if (entityConfig.tap_action) {
-        this._handlePersistentAction(entityConfig.tap_action, entityConfig.entity);
-      } else {
-        // Default: show more-info dialog
-        this._fireMoreInfo(entityConfig.entity);
-      }
-    };
-
-    const handleHold = (e: Event) => {
-      e.stopPropagation();
-      e.preventDefault();
-      if (entityConfig.hold_action) {
-        this._handlePersistentAction(entityConfig.hold_action, entityConfig.entity);
-      }
-    };
-
-    return html`
-      <div 
-        class="persistent-entity"
-        @click=${handleTap}
-        @contextmenu=${handleHold}
-        title="${entity?.attributes.friendly_name || entityConfig.entity}: ${state}"
-      >
-        <ha-icon
-          .icon=${icon}
-          style=${styleMap(iconStyles)}
-        ></ha-icon>
-      </div>
-    `;
-  }
-
-  /**
-   * Get default icon for persistent entity based on domain and state
-   */
-  private _getPersistentEntityDefaultIcon(domain: string, state: string): string {
-    // Lock icons
-    if (domain === 'lock') {
-      switch (state) {
-        case 'locked': return 'mdi:lock';
-        case 'unlocked': return 'mdi:lock-open';
-        case 'locking': return 'mdi:lock-clock';
-        case 'unlocking': return 'mdi:lock-clock';
-        case 'jammed': return 'mdi:lock-alert';
-        default: return 'mdi:lock-question';
-      }
-    }
-
-    // Binary sensor icons
-    if (domain === 'binary_sensor') {
-      return state === 'on' ? 'mdi:motion-sensor' : 'mdi:motion-sensor-off';
-    }
-
-    // Door/window sensors (cover domain)
-    if (domain === 'cover') {
-      switch (state) {
-        case 'open': return 'mdi:door-open';
-        case 'closed': return 'mdi:door-closed';
-        case 'opening': return 'mdi:door-open';
-        case 'closing': return 'mdi:door-closed';
-        default: return 'mdi:door';
-      }
-    }
-
-    // Switch
-    if (domain === 'switch') {
-      return state === 'on' ? 'mdi:toggle-switch' : 'mdi:toggle-switch-off';
-    }
-
-    // Light
-    if (domain === 'light') {
-      return state === 'on' ? 'mdi:lightbulb' : 'mdi:lightbulb-off';
-    }
-
-    // Default
-    return 'mdi:help-circle';
-  }
-
-  /**
-   * Get color for persistent entity based on domain and state
-   */
-  private _getPersistentEntityColor(domain: string, state: string, isUnavailable: boolean): string {
-    if (isUnavailable) {
-      return 'var(--disabled-text-color, #9e9e9e)';
-    }
-
-    // Lock colors
-    if (domain === 'lock') {
-      switch (state) {
-        case 'locked': return 'var(--state-lock-locked-color, #43a047)';
-        case 'unlocked': return 'var(--state-lock-unlocked-color, #ffc107)';
-        case 'locking': return 'var(--state-lock-locking-color, #ffc107)';
-        case 'unlocking': return 'var(--state-lock-unlocking-color, #ffc107)';
-        case 'jammed': return 'var(--state-lock-jammed-color, #db4437)';
-        case 'open': return 'var(--state-lock-open-color, #db4437)';
-        default: return 'var(--primary-text-color)';
-      }
-    }
-
-    // Binary sensor colors
-    if (domain === 'binary_sensor') {
-      return state === 'on' 
-        ? 'var(--state-binary_sensor-active-color, var(--amber-color, #ffc107))'
-        : 'var(--primary-text-color)';
-    }
-
-    // Cover colors
-    if (domain === 'cover') {
-      switch (state) {
-        case 'open': return 'var(--state-cover-open-color, #ffc107)';
-        case 'opening': return 'var(--state-cover-open-color, #ffc107)';
-        case 'closed': return 'var(--state-cover-closed-color, #43a047)';
-        case 'closing': return 'var(--state-cover-closed-color, #43a047)';
-        default: return 'var(--primary-text-color)';
-      }
-    }
-
-    // Switch colors
-    if (domain === 'switch') {
-      return state === 'on'
-        ? 'var(--state-switch-active-color, var(--amber-color, #ffc107))'
-        : 'var(--primary-text-color)';
-    }
-
-    // Light colors
-    if (domain === 'light') {
-      return state === 'on'
-        ? 'var(--state-light-active-color, var(--amber-color, #ffc107))'
-        : 'var(--primary-text-color)';
-    }
-
-    // Default colors
-    return state === 'on' || state === 'home' || state === 'open'
-      ? 'var(--state-active-color, var(--amber-color, #ffc107))'
-      : 'var(--primary-text-color)';
-  }
-
-  /**
-   * Handle action for persistent entity
-   */
-  private _handlePersistentAction(action: TapActionConfig, entityId: string): void {
-    if (!this.hass) return;
-
-    switch (action.action) {
-      case 'more-info':
-        this._fireMoreInfo(entityId);
-        break;
-      case 'toggle':
-        this.hass.callService('homeassistant', 'toggle', { entity_id: entityId });
-        break;
-      case 'navigate':
-        if (action.navigation_path) {
-          window.history.pushState(null, '', action.navigation_path);
-          window.dispatchEvent(new CustomEvent('location-changed', { bubbles: true, composed: true }));
-        }
-        break;
-      case 'url':
-        if (action.url_path) {
-          window.open(action.url_path, '_blank');
-        }
-        break;
-      case 'perform-action':
-        if (action.service) {
-          const [domain, service] = action.service.split('.');
-          this.hass.callService(domain, service, action.service_data || {});
-        }
-        break;
-      case 'none':
-      default:
-        break;
-    }
-  }
 
   /**
    * Fire more-info dialog for entity

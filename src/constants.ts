@@ -9,7 +9,7 @@
 // CARD METADATA
 // =============================================================================
 
-export const CARD_VERSION = '1.0.27';
+export const CARD_VERSION = '1.0.28';
 export const CARD_NAME = 'Unified Room Card Refactor';
 export const CARD_DESCRIPTION = 'A comprehensive room status card for Home Assistant (Refactor Branch)';
 export const CARD_EDITOR_NAME = 'unified-room-card-refactor-editor';
