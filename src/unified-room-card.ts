@@ -654,6 +654,12 @@ export class UnifiedRoomCard extends LitElement {
       iconContainerStyles['height'] = this._config.img_cell_size;
     }
     
+    // Apply dynamic background color for active state with img_cell
+    if (isActive && showImgCell) {
+      const bgColor = this._getGroupBackgroundColor();
+      iconContainerStyles['background'] = bgColor;
+    }
+    
     // Icon styles
     const iconStyles: Record<string, string> = {};
     if (this._config?.icon_size) {
@@ -741,9 +747,6 @@ export class UnifiedRoomCard extends LitElement {
                   class=${classMap(iconContainerClasses)}
                   style=${styleMap(iconContainerStyles)}
                 >
-                  ${isActive && showImgCell ? html`
-                    <div class="icon-bg-overlay" style="background: ${this._getGroupBackgroundColor()}"></div>
-                  ` : nothing}
                   <ha-icon
                     .icon=${icon}
                     style=${styleMap(iconStyles)}

@@ -158,36 +158,14 @@ function t(t,e,i,n){var a,s=arguments.length,o=s<3?e:null===n?n=Object.getOwnPro
   }
 
   .icon-container.with-img-cell {
-    position: relative;
     width: ${r("50px")};
     height: ${r("50px")};
     border-radius: 100%;
-    /* Solid base layer - prevents card background from showing through */
-    background: var(--primary-background-color, #fff);
-    transition: background 0.3s ease;
-  }
-
-  /* Color overlay - sits between base and icon */
-  .icon-bg-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 100%;
-    transition: background 0.3s ease;
-  }
-
-  /* Ensure icon stays on top of the overlay */
-  .icon-container.with-img-cell ha-icon {
-    position: relative;
-    z-index: 1;
-  }
-
-  /* Inactive state - show secondary background */
-  .icon-container.with-img-cell:not(.active) {
     background: var(--secondary-background-color);
+    transition: background 0.3s ease;
   }
+
+  /* Active state background is applied dynamically via inline style for light color support */
 
   .icon-container ha-icon {
     --mdc-icon-size: ${r(At)};
@@ -2425,7 +2403,7 @@ function t(t,e,i,n){var a,s=arguments.length,o=s<3?e:null===n?n=Object.getOwnPro
       <div class="name-section">
         ${this._config.name}
       </div>
-    `:F}_renderIcon(){const t=this._getPrimaryEntity(),e=this._isGroupActive(),i=this._getPrimaryDomain()||"",n=!1!==this._config?.show_icon,a=this._config?.show_img_cell??!0,s=this._config?.icon||this._getDefaultIcon(t),o=e&&this._config?.icon_animation&&"none"!==this._config.icon_animation&&(r=this._config.icon_animation)&&"none"!==r?`animation-${r}`:"";var r;const c={"icon-container":!0,"with-img-cell":a,active:e};o&&(c[o]=!0);const l={};if("spin"===this._config?.icon_animation&&e){const t=this._config?.spin_duration||2;l["--spin-duration"]=`${t}s`}a&&this._config?.img_cell_size&&(l.width=this._config.img_cell_size,l.height=this._config.img_cell_size);const d={};if(this._config?.icon_size&&(d["--mdc-icon-size"]=this._config.icon_size,a||(l.width=this._config.icon_size,l.height=this._config.icon_size)),e&&a)d.color="var(--text-primary-color, #fff)";else if(t&&e)if("light"===i)d.color=this._getGroupIconColor();else if("climate"===i)d.color=this._getClimateIconColor(t);else{const e=this._getEntityStateColor(t);d.color=e||"var(--state-active-color, var(--amber-color, #ffc107))"}else if(t&&"climate"===i)d.color=this._getClimateIconColor(t);else if(t){const e=this._getEntityStateColor(t);e&&(d.color=e)}const h={};switch(this._config?.icon_horizontal_position||Nt){case Dt:h["justify-self"]="start";break;case Ut:h["justify-self"]="center";break;default:h["justify-self"]="end"}switch(this._config?.icon_vertical_position||Ot){case Ot:h["align-self"]="start";break;case Mt:h["align-self"]="center";break;case Bt:h["align-self"]="end"}return W`
+    `:F}_renderIcon(){const t=this._getPrimaryEntity(),e=this._isGroupActive(),i=this._getPrimaryDomain()||"",n=!1!==this._config?.show_icon,a=this._config?.show_img_cell??!0,s=this._config?.icon||this._getDefaultIcon(t),o=e&&this._config?.icon_animation&&"none"!==this._config.icon_animation&&(r=this._config.icon_animation)&&"none"!==r?`animation-${r}`:"";var r;const c={"icon-container":!0,"with-img-cell":a,active:e};o&&(c[o]=!0);const l={};if("spin"===this._config?.icon_animation&&e){const t=this._config?.spin_duration||2;l["--spin-duration"]=`${t}s`}if(a&&this._config?.img_cell_size&&(l.width=this._config.img_cell_size,l.height=this._config.img_cell_size),e&&a){const t=this._getGroupBackgroundColor();l.background=t}const d={};if(this._config?.icon_size&&(d["--mdc-icon-size"]=this._config.icon_size,a||(l.width=this._config.icon_size,l.height=this._config.icon_size)),e&&a)d.color="var(--text-primary-color, #fff)";else if(t&&e)if("light"===i)d.color=this._getGroupIconColor();else if("climate"===i)d.color=this._getClimateIconColor(t);else{const e=this._getEntityStateColor(t);d.color=e||"var(--state-active-color, var(--amber-color, #ffc107))"}else if(t&&"climate"===i)d.color=this._getClimateIconColor(t);else if(t){const e=this._getEntityStateColor(t);e&&(d.color=e)}const h={};switch(this._config?.icon_horizontal_position||Nt){case Dt:h["justify-self"]="start";break;case Ut:h["justify-self"]="center";break;default:h["justify-self"]="end"}switch(this._config?.icon_vertical_position||Ot){case Ot:h["align-self"]="start";break;case Mt:h["align-self"]="center";break;case Bt:h["align-self"]="end"}return W`
       <div class="icon-section" style=${bt(h)}>
         ${this._config?.show_state&&t?W`<span class="state-text">${t.state}</span>`:F}
         <div class="icon-wrapper">
@@ -2434,9 +2412,6 @@ function t(t,e,i,n){var a,s=arguments.length,o=s<3?e:null===n?n=Object.getOwnPro
                   class=${_t(c)}
                   style=${bt(l)}
                 >
-                  ${e&&a?W`
-                    <div class="icon-bg-overlay" style="background: ${this._getGroupBackgroundColor()}"></div>
-                  `:F}
                   <ha-icon
                     .icon=${s}
                     style=${bt(d)}
