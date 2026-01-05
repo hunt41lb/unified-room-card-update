@@ -217,6 +217,7 @@ export interface UnifiedRoomCardConfig {
   img_cell_size?: string;
   icon_horizontal_position?: IconHorizontalPositionType;
   icon_vertical_position?: IconVerticalPositionType;
+  icon_background_opacity?: number;  // Opacity of icon background when active (0-1, default: 0.3)
   
   // Entity Domain/State Handling
   active_states?: string[];  // Custom states considered "active" (overrides domain defaults)

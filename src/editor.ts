@@ -310,6 +310,19 @@ export class UnifiedRoomCardEditor extends LitElement {
                   ></ha-textfield>
                 </div>
               </div>
+              <!-- Background Opacity -->
+              <div class="form-row">
+                <span class="form-label">Background Opacity</span>
+                <div class="form-input">
+                  <ha-selector
+                    .hass=${this.hass}
+                    .selector=${{ number: { min: 0, max: 1, step: 0.1, mode: 'slider' } }}
+                    .value=${this._config?.icon_background_opacity ?? 0.3}
+                    @value-changed=${(e: CustomEvent) => this._valueChanged('icon_background_opacity', e.detail.value)}
+                  ></ha-selector>
+                </div>
+              </div>
+              <p class="helper-text">Opacity of icon background when entity is active (0 = transparent, 1 = solid)</p>
             ` : ''}
             <!-- Animation dropdown -->
             <div class="form-row">

@@ -112,6 +112,7 @@ update_entities:
 | `show_icon` | boolean | `true` | Show/hide main icon |
 | `show_state` | boolean | `false` | Show entity state text below name |
 | `animate_icon` | boolean | `false` | Animate icon when entity is active |
+| `icon_background_opacity` | number | `0.3` | Opacity of icon background when active (0-1) |
 | `card_height` | string | `97px` | Card height |
 | `card_width` | string | `auto` | Card width |
 
