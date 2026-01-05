@@ -38,3 +38,11 @@ export {
   getDefaultIcon as getPersistentDefaultIcon,
   getEntityColor as getPersistentEntityColor
 } from './persistent-entities';
+export {
+  renderIntermittentEntities,
+  isEntityActive as isIntermittentEntityActive,
+  getActiveEntityCount as getIntermittentActiveCount,
+  getDefaultIcon as getIntermittentDefaultIcon,
+  getBinarySensorIcon,
+  getEntityColor as getIntermittentEntityColor
+} from './intermittent-entities';
