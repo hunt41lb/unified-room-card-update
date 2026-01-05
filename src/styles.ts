@@ -224,11 +224,27 @@ export const iconStyles = css`
   }
 
   .icon-container.with-img-cell {
+    position: relative;
     width: ${unsafeCSS(DEFAULT_IMG_CELL_WIDTH)};
     height: ${unsafeCSS(DEFAULT_IMG_CELL_HEIGHT)};
     border-radius: 100%;
     background: var(--secondary-background-color);
     transition: background 0.3s ease;
+    /* Isolate stacking context for z-index to work properly */
+    isolation: isolate;
+  }
+
+  /* Base layer for proper opacity blending - prevents card background from showing through */
+  .icon-container.with-img-cell::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 100%;
+    background: var(--primary-background-color, var(--card-background-color, #fff));
+    z-index: -1;
   }
 
   /* Active state background is applied dynamically via inline style for light color support */
