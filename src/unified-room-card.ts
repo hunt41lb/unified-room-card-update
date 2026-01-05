@@ -766,8 +766,10 @@ export class UnifiedRoomCard extends LitElement {
    * Supports light entities with rgb_color attribute and climate entities with hvac_action
    */
   private _getEntityBackgroundColor(entity?: { entity_id: string; state: string; attributes: Record<string, unknown> }): string {
+    const opacity = this._config?.icon_background_opacity ?? 0.3;
+    
     if (!entity) {
-      return 'var(--state-active-color, rgba(255, 167, 38, 0.3))';
+      return `rgba(255, 193, 7, ${opacity})`; // Amber fallback
     }
 
     const domain = this._getDomain(entity.entity_id);
@@ -777,6 +779,7 @@ export class UnifiedRoomCard extends LitElement {
       const hvacAction = entity.attributes.hvac_action as string | undefined;
       switch (hvacAction) {
         case 'heating':
+        case 'preheating':
           return 'var(--state-climate-heat-color, #ff8c00)';
         case 'cooling':
           return 'var(--state-climate-cool-color, #2196f3)';
@@ -784,47 +787,44 @@ export class UnifiedRoomCard extends LitElement {
           return 'var(--state-climate-dry-color, #8bc34a)';
         case 'fan':
           return 'var(--state-climate-fan_only-color, #00bcd4)';
-        case 'preheating':
-          return 'var(--state-climate-heat-color, #ff8c00)';
         default:
           // idle or off - use secondary background (no colored background)
           return 'var(--secondary-background-color)';
       }
     }
 
-    // Light entities - check for color attributes (with opacity for img_cell background)
+    // Light entities - use rgb_color directly when on
     if (domain === 'light') {
-      const opacity = this._config?.icon_background_opacity ?? 0.3; // Configurable opacity
-      
-      // Check for rgb_color attribute
-      const rgbColor = entity.attributes.rgb_color as [number, number, number] | undefined;
-      if (rgbColor && Array.isArray(rgbColor) && rgbColor.length === 3) {
-        return `rgba(${rgbColor[0]}, ${rgbColor[1]}, ${rgbColor[2]}, ${opacity})`;
+      if (entity.state === 'on') {
+        // Use rgb_color if available
+        if (entity.attributes.rgb_color) {
+          const rgb = entity.attributes.rgb_color as [number, number, number];
+          return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${opacity})`;
+        }
+        // Light on but no color capability - use amber
+        return `rgba(255, 193, 7, ${opacity})`;
       }
-
-      // Check for hs_color and convert to rgb
-      const hsColor = entity.attributes.hs_color as [number, number] | undefined;
-      const brightness = entity.attributes.brightness as number | undefined;
-      if (hsColor && Array.isArray(hsColor) && hsColor.length === 2) {
-        const rgb = this._hsToRgb(hsColor[0], hsColor[1], brightness);
-        return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${opacity})`;
-      }
-
-      // Lights without color capability (warmth only) - use amber with opacity
-      return `rgba(255, 193, 7, ${opacity})`; // Amber color with opacity
+      // Light off - no colored background
+      return 'var(--secondary-background-color)';
     }
 
-    // Lock entities
+    // Lock entities - use state-specific colors
     if (domain === 'lock') {
       const stateColor = DOMAIN_STATE_COLORS[domain]?.[entity.state];
       if (stateColor) {
         return stateColor;
       }
+      return 'var(--secondary-background-color)';
     }
 
-    // Default for other domains - amber active color with configurable opacity
-    const defaultOpacity = this._config?.icon_background_opacity ?? 0.3;
-    return `rgba(255, 167, 38, ${defaultOpacity})`;
+    // Other entities - check if in active state using domain defaults
+    const activeStates = DOMAIN_ACTIVE_STATES[domain] || ['on'];
+    if (activeStates.includes(entity.state)) {
+      return `rgba(255, 193, 7, ${opacity})`; // Amber for active state
+    }
+
+    // Inactive - use secondary background
+    return 'var(--secondary-background-color)';
   }
 
   /**
@@ -832,17 +832,9 @@ export class UnifiedRoomCard extends LitElement {
    * Used when img_cell is disabled
    */
   private _getLightIconColor(entity: { entity_id: string; state: string; attributes: Record<string, unknown> }): string {
-    // Check for rgb_color attribute
-    const rgbColor = entity.attributes.rgb_color as [number, number, number] | undefined;
-    if (rgbColor && Array.isArray(rgbColor) && rgbColor.length === 3) {
-      return `rgb(${rgbColor[0]}, ${rgbColor[1]}, ${rgbColor[2]})`;
-    }
-
-    // Check for hs_color and convert to rgb
-    const hsColor = entity.attributes.hs_color as [number, number] | undefined;
-    const brightness = entity.attributes.brightness as number | undefined;
-    if (hsColor && Array.isArray(hsColor) && hsColor.length === 2) {
-      const rgb = this._hsToRgb(hsColor[0], hsColor[1], brightness);
+    // Only use rgb_color if light is on and has color
+    if (entity.state === 'on' && entity.attributes.rgb_color) {
+      const rgb = entity.attributes.rgb_color as [number, number, number];
       return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
     }
 
@@ -870,34 +862,6 @@ export class UnifiedRoomCard extends LitElement {
         return 'var(--primary-text-color)';
     }
   }
-
-  /**
-   * Convert HS color to RGB
-   */
-  private _hsToRgb(h: number, s: number, brightness?: number): [number, number, number] {
-    const sat = s / 100;
-    const light = (brightness ?? 255) / 255 * 0.5;
-    
-    const c = (1 - Math.abs(2 * light - 1)) * sat;
-    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
-    const m = light - c / 2;
-    
-    let r = 0, g = 0, b = 0;
-    
-    if (h >= 0 && h < 60) { r = c; g = x; b = 0; }
-    else if (h >= 60 && h < 120) { r = x; g = c; b = 0; }
-    else if (h >= 120 && h < 180) { r = 0; g = c; b = x; }
-    else if (h >= 180 && h < 240) { r = 0; g = x; b = c; }
-    else if (h >= 240 && h < 300) { r = x; g = 0; b = c; }
-    else if (h >= 300 && h < 360) { r = c; g = 0; b = x; }
-    
-    return [
-      Math.round((r + m) * 255),
-      Math.round((g + m) * 255),
-      Math.round((b + m) * 255)
-    ];
-  }
-
 
   /**
    * Check if entity is unavailable
