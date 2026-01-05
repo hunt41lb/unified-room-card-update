@@ -767,7 +767,7 @@ export class UnifiedRoomCard extends LitElement {
    */
   private _getEntityBackgroundColor(entity?: { entity_id: string; state: string; attributes: Record<string, unknown> }): string {
     if (!entity) {
-      return 'var(--state-active-color, rgba(255, 167, 38, 0.3))';
+      return 'var(--state-active-color, rgba(255, 167, 38, 0.85))';
     }
 
     const domain = this._getDomain(entity.entity_id);
@@ -794,7 +794,7 @@ export class UnifiedRoomCard extends LitElement {
 
     // Light entities - check for color attributes (with opacity for img_cell background)
     if (domain === 'light') {
-      const opacity = 0.3; // Opacity for light background when active with img_cell
+      const opacity = 0.85; // Higher opacity for better icon visibility
       
       // Check for rgb_color attribute
       const rgbColor = entity.attributes.rgb_color as [number, number, number] | undefined;
@@ -823,7 +823,7 @@ export class UnifiedRoomCard extends LitElement {
     }
 
     // Default for other domains - amber active color with opacity
-    return 'rgba(255, 167, 38, 0.3)';
+    return 'rgba(255, 167, 38, 0.85)';
   }
 
   /**
@@ -995,6 +995,8 @@ export class UnifiedRoomCard extends LitElement {
       return this._getEntityBackgroundColor(primaryEntity);
     }
     
+    const opacity = 0.85; // Opacity for better icon visibility
+    
     // Collect RGB values from all active lights
     const rgbValues: { r: number; g: number; b: number }[] = [];
     
@@ -1008,12 +1010,12 @@ export class UnifiedRoomCard extends LitElement {
       }
     }
     
-    // If we have RGB values, average them
+    // If we have RGB values, average them with opacity
     if (rgbValues.length > 0) {
       const avgR = Math.round(rgbValues.reduce((sum, c) => sum + c.r, 0) / rgbValues.length);
       const avgG = Math.round(rgbValues.reduce((sum, c) => sum + c.g, 0) / rgbValues.length);
       const avgB = Math.round(rgbValues.reduce((sum, c) => sum + c.b, 0) / rgbValues.length);
-      return `rgb(${avgR}, ${avgG}, ${avgB})`;
+      return `rgba(${avgR}, ${avgG}, ${avgB}, ${opacity})`;
     }
     
     // Fallback to primary entity color
